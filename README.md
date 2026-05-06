@@ -1,1 +1,2 @@
-# robot-rl-learning-lab
+# Robot RL Learning Lab
+This repository documents my hands-on study of deep reinforcement learning algorithms, with a focus on robotic control and manipulation. I reproduced core policy-gradient and actor-critic methods, ran controlled experiments, and extended the examples to MuJoCo/robotics environments.

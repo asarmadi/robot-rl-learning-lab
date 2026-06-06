@@ -30,12 +30,12 @@ $$
 S_0, A_0, R_1, S_1, A_1, R_2, \cdots, S_{T-1}, A_{T-1}, R_T
 $$
 
-1. G \leftarrow 0
+1. Set $G \leftarrow 0$
 
 2. Loop for each step of the episode, $t=T-1,T-2,\cdots,0$:
 
     $$
-    G \leftarrow $\gamma$ G + R_{t+1}
+    G \leftarrow \gamma G + R_{t+1}
     $$
 
 
@@ -47,13 +47,14 @@ One way to estimate the expected return is to use the Monte Carlo methods by ave
 **Pseudocode**
 
 Loop for number of episodes:
+
     Generate an episode following $\pi$: 
     
     $$
     S_0, A_0, R_1, S_1, A_1, R_2, \cdots, S_{T-1}, A_{T-1}, R_T
     $$
 
-    $G \leftarrow 0$
+    Set $G \leftarrow 0$
 
     Loop for each step of the episode, $t=T-1,T-2,\cdots,0$:
 
@@ -66,6 +67,5 @@ Loop for number of episodes:
 
         $$
         V(S_t) \leftarrow average(Returns(S_t))
-        $$
-``` 
+        $$ 
 

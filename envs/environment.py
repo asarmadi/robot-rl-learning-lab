@@ -1,7 +1,5 @@
 class Environment:
-    def __init__(self, state_dim, action_dim):
-        self.state_dim = state_dim
-        self.action_dim = action_dim
+    def __init__(self):
         self.init_state = None
         self.current_state = self.init_state
 

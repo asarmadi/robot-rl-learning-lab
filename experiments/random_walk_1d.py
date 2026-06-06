@@ -3,11 +3,11 @@ from envs.random_walk import RandomWalk1D
 from estimators.mc_value_estimator import MonteCarloValueEstimator
 
 seed = 0
-max_state = 10
+n_state = 7
 
 policy = RandomPolicy(action_dim=2, seed=seed)
-env    = RandomWalk1D(max_state=max_state)
-mc     = MonteCarloValueEstimator(env.state_dim, 'random_walk_1D/')
+env    = RandomWalk1D(n_state=n_state)
+mc     = MonteCarloValueEstimator(n_states=n_state, dir_='random_walk_1D/', gamma=0.9)
 
 n_episodes = 10
 

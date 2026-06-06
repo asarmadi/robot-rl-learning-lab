@@ -1,12 +1,11 @@
 from envs.environment import Environment
 
 class RandomWalk1D(Environment):
-    def __init__(self, state_dim=1, action_dim=2, max_state=10):
-        super().__init__(state_dim=state_dim, action_dim=action_dim)
-        self.state_dim = self.state_dim
-        self.init_state      = 0.0  
-        self.far_right_state = max_state 
-        self.far_left_state  = -max_state
+    def __init__(self, n_state=10):
+        super().__init__()
+        self.init_state      = 0
+        self.far_right_state = n_state//2 + 1
+        self.far_left_state  = -self.far_right_state - 1
 
     def reset(self):
         self.current_state = self.init_state

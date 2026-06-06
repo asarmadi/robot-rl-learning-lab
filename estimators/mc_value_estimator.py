@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 class MonteCarloValueEstimator:
-    def __init__(self, n_states, dir_, gamma=0.5, max_state=10):
+    def __init__(self, n_states, dir_, gamma=0.5):
         self.n_states       = n_states
+        self.max_state      = self.n_states//2
         self.returns        = {}
-        self.state_values   = {}
+        self.state_values   = {} # Initializing the state-values to 0.5
         self.episode_states = [] # For making animation purposes
         self.gamma          = gamma
-        self.max_state      = max_state
         self.save_dir       = './logs/'+dir_
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(self.save_dir+'state_values/', exist_ok=True)
@@ -33,7 +33,7 @@ class MonteCarloValueEstimator:
         ax.set_xlim(-self.max_state, self.max_state)
         ax.set_ylim(-1, 1)
         ax.set_yticks([])
-        ax.set_xticks(range(-self.max_state,self.max_state))
+        ax.set_xticks(range(-self.max_state,self.max_state+1))
 
         agent, = ax.plot([], [], "o", markersize=20)
 
@@ -55,6 +55,8 @@ class MonteCarloValueEstimator:
 
     def plot_value(self, dir_):
         plt.figure()
+        plt.xlim(-self.max_state-1, self.max_state+1)
+        plt.ylim(0, 1)
         plt.bar(self.state_values.keys(), self.state_values.values())
         plt.xlabel("States")
         plt.ylabel("Value")

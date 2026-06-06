@@ -9,8 +9,21 @@ We have a 1D line with 7 states (i.e, -3, -2, -1, 0, 1, 2, 3). In the beginning 
 
 The agent uses a random policy at each step. Before each step, the agent flips a coin. If it is heads, it takes one step forward. If it is tails, it takes one step back.
 
-## Return
-We are using Monte Carlo return estimator to update the return value after each episode. Return at time t is defined as 
+## State-value estimation
+We are using Monte Carlo method to estimate the state-value after each episode. Return at time t is defined as 
+
 $$
 G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R{t+3} + \cdots
 $$
+
+$$
+G_t = R_{t+1} + \gamma G_{t+1}
+$$
+
+The value function of a state $s$ (state-value) under a policy $\pi$, denoted $v_{\pi}(s)$, is the expected return when starting in $s$ and following $\pi$ thereafter:
+
+$$
+v_{\pi}(s) \triangleq \mathbb{E}[G_t \mid S_t = s]
+$$
+
+The Monte Carlo methods are averaging over many random samples of actual returns. In this case, if the agent follows policy $\pi$ and keeps an average, for each state visited, of the actual returns that followed that state, then the average will converge to the state's value $v_{\pi}(s)$, as the number of times that state is encountered approaches infinity.

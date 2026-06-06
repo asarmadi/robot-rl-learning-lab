@@ -2,12 +2,14 @@ from agents.random_policy import RandomPolicy
 from envs.random_walk import RandomWalk1D
 from estimators.mc_value_estimator import MonteCarloValueEstimator
 
+seed = 0
+max_state = 10
 
-policy = RandomPolicy(action_dim=2)
-env    = RandomWalk1D()
+policy = RandomPolicy(action_dim=2, seed=seed)
+env    = RandomWalk1D(max_state=max_state)
 mc     = MonteCarloValueEstimator(env.state_dim, 'random_walk_1D/')
 
-n_episodes = 100
+n_episodes = 10
 
 for episode_idx in range(n_episodes):
     state = env.reset()
@@ -23,6 +25,6 @@ for episode_idx in range(n_episodes):
     
     mc.update(episode)
 
-    if episode_idx % 10 == 0:
+    if episode_idx % 1 == 0:
         mc.plot_states(episode_idx)
         mc.plot_value(episode_idx)

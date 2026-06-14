@@ -1,6 +1,11 @@
-class Agent:
-    def __init__(self, action_dim):
-        self.action_dim = action_dim
+import numpy as np
 
-    def act(self, state, key=None):
-        pass
+class Agent:
+    def __init__(self, action_dim, seed):
+        self.action_dim = action_dim
+        np.random.seed(seed)
+
+
+    def act(self, state):
+        action = np.random.randint(0, self.action_dim)
+        return self.actions[action]

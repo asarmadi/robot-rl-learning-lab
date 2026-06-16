@@ -1,2 +1,0 @@
-# Bellman Evaluation vs Monte Carlo Value Estimation
-Monte Carlo samples the state space to get an estimation of the state values. While Bellman evaluation needs to visit every state in the state space to update the valu function. However, to get a good estimate in Monte Carlo, many episode should be run.

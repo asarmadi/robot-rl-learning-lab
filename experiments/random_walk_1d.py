@@ -13,15 +13,14 @@ n_episodes = 10
 
 for episode_idx in range(n_episodes):
     state = env.reset()
-    done = False
     episode = []
-    while not done:
+    while True:
         action = policy.act(state)
         next_state, reward = env.step(action)
         episode.append((state, reward))
         state = next_state
         if state == env.far_right_state or state == env.far_left_state:
-            done = True
+            break
     
     mc.update(episode)
 

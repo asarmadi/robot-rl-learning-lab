@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -26,6 +27,67 @@ class MonteCarloValueEstimator:
             self.state_values[state] = sum(self.returns[state])/len(self.returns[state])
             self.episode_states.append(state)
         
+    def plot_states_gridworld(self, dir_, grid_size):
+        fig, ax = plt.subplots()
+        ax.set_xlim(0, grid_size)
+        ax.set_ylim(0, grid_size)
+        ax.set_yticks(range(0, grid_size+1))
+        ax.set_xticks(range(0, grid_size+1))
+        ax.grid(linewidth=1, visible=True)
+
+        agent,  = ax.plot([], [], "o", markersize=20)
+
+
+        def update_frame(frame):
+            row, col = self.episode_states[::-1][frame]
+            agent.set_data([col+0.5], [row+0.5])
+            return agent,
+
+        ani = FuncAnimation(
+            fig,
+            update_frame,
+            frames=len(self.episode_states),
+            interval=500,
+            blit=True
+        )
+
+        ani.save(f'{self.save_dir}state_animation/{dir_}.gif', writer="pillow", fps=2)
+        plt.close(fig)
+        plt.close()
+
+        fig, ax = plt.subplots()
+
+        grid = np.zeros((grid_size, grid_size))
+
+        for state, value in self.state_values.items():
+            row, col = state
+            grid[row, col] = value
+
+        ax.imshow(grid,
+                  origin="lower",
+                  extent=(0, grid_size, 0, grid_size)
+                  )
+
+        # Display each value inside its cell
+        for row in range(grid.shape[0]):
+            for col in range(grid.shape[1]):
+                ax.text(
+                    col+0.5,
+                    row+0.5,
+                    f"{grid[row, col]:.2f}",
+                    ha="center",
+                    va="center"
+                )
+
+        ax.set_title("State Values")
+        ax.set_xticks(np.arange(0, grid_size+1, 1))
+        ax.set_yticks(np.arange(0, grid_size+1, 1))
+        ax.grid()
+        ax.tick_params()
+        fig.savefig(f'{self.save_dir}state_values/{dir_}.png')
+        plt.close(fig)
+        plt.close()
+
 
     def plot_states(self, dir_):
 

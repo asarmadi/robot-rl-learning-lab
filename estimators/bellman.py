@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class BellmanGridWorld2D:
-    def __init__(self, grid_size):
-        self.out_dir = './logs/GridWorld2D/stateValues/'
+    def __init__(self, grid_size, dir_name):
+        self.out_dir = f'./logs/{dir_name}/stateValues/'
         os.makedirs(self.out_dir, exist_ok=True)
         self.grid_size = grid_size
 

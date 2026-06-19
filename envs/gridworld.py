@@ -27,3 +27,29 @@ class GridWorld(Environment):
             return next_state, reward
         else:
             return prob, next_state, reward
+
+
+class GridWorldwithObstacle(Environment):
+    def __init__(self, grid_size=4):
+        super().__init__()
+        self.init_state     = np.array([0, 0])
+        self.terminal_state = np.array([grid_size-1, grid_size-1])
+        self.obstacle       = np.array([grid_size//2-1, grid_size//2-1]) # We assume the obstable is only a grid
+        self.grid_size = grid_size
+
+    def update(self, state, action):
+        # This function return probability of the next state, next_state and the reward
+        next_state = state + action
+
+        ### We need to check whether the agent goes out of boundaries
+        if next_state[0] < 0 or next_state[0] >= self.grid_size or \
+            next_state[1] < 0 or next_state[1] >= self.grid_size:
+            return  1, state, -1
+        
+        if (next_state == self.terminal_state).all():
+            return 1, next_state, 0
+        
+        if (next_state == self.obstacle).all(): 
+            return 1, state, -4
+        
+        return 1, next_state, -1

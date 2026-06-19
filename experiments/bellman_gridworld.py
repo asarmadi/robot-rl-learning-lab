@@ -13,7 +13,7 @@ seed = 42
 
 env = GridWorld(grid_size=grid_size, mode='bellman')
 agent = RandomPolicy2D(action_dim=4, seed=seed)
-estimator = BellmanGridWorld2D(grid_size=grid_size) # This is just used for plotting purposes
+estimator = BellmanGridWorld2D(grid_size=grid_size, dir_name='GridWorld') # This is just used for plotting purposes
 
 iteration  = 0
 delta_     = np.inf     # The error between future and current estimates of value function

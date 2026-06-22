@@ -17,4 +17,10 @@ class epsilonGreedy(Agent):
             return max_indices[idx]
         return max_indices
 
+    def act_greedy(self, action_value):
+        max_indices = np.argmax(action_value)
+        if type(max_indices) == list:
+            idx = np.random.randint(len(max_indices))
+            return max_indices[idx]
+        return max_indices
 

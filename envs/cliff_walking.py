@@ -6,7 +6,7 @@ class cliffWalking(Environment):
         super().__init__()
         self.grid_size = grid_size
         self.init_state = np.array([0,0])
-        self.terminal_state = np.array([grid_size[0]-1, grid_size[1]-1])
+        self.terminal_state = np.array([0, grid_size[1]-1])
 
     def update(self, state, action):
         next_state = state + action

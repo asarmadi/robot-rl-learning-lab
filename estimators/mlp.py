@@ -1,8 +1,25 @@
 import torch.nn as nn
 
 class MLP(nn.Module):
-    def __init__(self, hidden_dim, n_nodes, output_dim):
+    def __init__(self, input_dim, hidden_dim, n_layers, output_dim):
         super().__init__()
-        self.hidden_dim  = hidden_dim
-        self.n_nodes     = n_nodes
-        self.output_dim  = output_dim
+
+        self.layers = nn.ModuleList()
+
+        self.layers.append(nn.Linear(input_dim, hidden_dim))
+
+        for i in range(n_layers):
+            self.layers.append(nn.Linear(hidden_dim, hidden_dim))
+
+        self.layers.append(nn.Linear(hidden_dim, output_dim))
+
+    def forward(self, x):
+        for i, layer in enumerate(self.layers):
+            x = layer(x)
+            # Not applying the activation function to the last layer
+            if i < len(self.layers) - 1:
+                x = self.activation(x)
+
+        return x
+
+

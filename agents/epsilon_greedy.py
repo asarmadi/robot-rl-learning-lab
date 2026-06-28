@@ -2,11 +2,13 @@ import numpy as np
 from agents.agent import Agent
 
 class epsilonGreedy(Agent):
-    def __init__(self, action_dim, seed, epsilon):
+    def __init__(self, action_dim, seed, epsilon, environment='GridWorld'):
         super().__init__(seed=seed, action_dim=action_dim)
         self.epsilon = epsilon
-        self.actions = [np.array([-1,0]), np.array([1,0]), np.array([0,1]), np.array([0,-1])] # Down, Up, Right, Left
-        
+        if environment == 'GridWorld':
+            self.actions = [np.array([-1,0]), np.array([1,0]), np.array([0,1]), np.array([0,-1])] # Down, Up, Right, Left
+        else:
+            self.actions = np.linspace(-10,10,action_dim)
 
     def act(self, action_value):
         if np.random.random() < self.epsilon:

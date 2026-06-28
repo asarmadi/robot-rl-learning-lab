@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class MLP(nn.Module):
@@ -5,6 +6,7 @@ class MLP(nn.Module):
         super().__init__()
 
         self.layers = nn.ModuleList()
+        self.activation = nn.ReLU()
 
         self.layers.append(nn.Linear(input_dim, hidden_dim))
 
@@ -21,5 +23,13 @@ class MLP(nn.Module):
                 x = self.activation(x)
 
         return x
+    
+    def predict(self, x):
+        device = next(self.parameters()).device
+        x = torch.as_tensor(x, dtype=torch.float32, device=device)
+        x = x.unsqueeze(0).squeeze(-1)
+
+        with torch.no_grad():
+            return self(x)
 
 

@@ -87,4 +87,17 @@ class CartPole(Environment):
         plt.close(fig)
         plt.close()
 
+        fig, axes = plt.subplots(4, 1)
+
+        state_names = [r'$x$', r'$\dot{x}$', r'$\theta$', r'$\dot{\theta}$']
+
+        for i in range(self.state_dim):
+            axes[i].plot(np.array(states)[:,i], label=state_names[i])
+            axes[i].legend()
+
+        plt.savefig(f'{self.save_dir}/states.png')
+        plt.close(fig)
+        plt.close()
+
+
         

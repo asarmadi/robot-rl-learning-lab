@@ -9,15 +9,14 @@ seed              = 0
 torch.manual_seed(seed)
 
 # DQN Hyper-Parameters
-n_episodes        = 5
+n_episodes        = 20
 epsilon           = 0.7  # Probability for taking random actions
 action_dim        = 10   # Number of bins for the action space
 gamma             = 0.9  # Discount factor
-initial_data_size = 100 # This is used to make sure, we train the network after dataset has some samples and not train only on few samples in the begining
-update_rate       = 5 # Number of steps used to copy the online network to the target network.
+initial_data_size = 1000 # This is used to make sure, we train the network after dataset has some samples and not train only on few samples in the begining
+update_rate       = 500 # Number of steps used to copy the online network to the target network.
 
 # Training Hyper-Parameters
-n_epochs          = 20
 batch_size        = 64
 lr                = 0.001
 
@@ -36,7 +35,6 @@ Q_online = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers
 Q_target = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=agent.action_dim)
 
 training = Training(batch_size=batch_size,
-                    n_epochs=n_epochs,
                     lr=lr,
                     gamma=gamma,
                     device=device,

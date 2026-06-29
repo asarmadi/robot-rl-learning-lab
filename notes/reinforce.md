@@ -3,7 +3,7 @@ The main idea in REINFORCE is to use a neural network as the policy and learn po
 
 $$
 
-J(\theta) = \mathbb{E}_{\tau \from p_{\theta}(\tau)} G(\tau)
+J(\theta) = \mathbb{E}_{\tau \mathcal p_{\theta}(\tau)} G(\tau)
 
 $$
 
@@ -38,7 +38,7 @@ $$
 
 \begin{aligned}
 \nabla_{\theta}J(\theta) &= \int p_{\theta}(\tau)\nabla_{\theta} log p_{\theta}(\tau) G(\tau)  \, \mathrm{d}\tau \\
-&= \mathbb{E}_{\tau \from p_{\theta}(\tau)} [\nabla_{\theta} log p_{\theta}(\tau) G(\tau)]
+&= \mathbb{E}_{\tau \mathcal p_{\theta}(\tau)} [\nabla_{\theta} log p_{\theta}(\tau) G(\tau)]
 \end{aligned}
 
 $$
@@ -47,7 +47,7 @@ We expand the trajectory probability as $p_{\theta}(\tau)=p(s_0) \prod_{t=0}^{t=
 
 $$
 
-\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau \from p_{\theta}(\tau)}[\sum_{t=0}^{t=T}\nabla_{\theta}log \pi_{\theta}(a_t|s_t)G(\tau)]
+\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau \mathcal p_{\theta}(\tau)}[\sum_{t=0}^{t=T}\nabla_{\theta}log \pi_{\theta}(a_t|s_t)G(\tau)]
 
 $$
 
@@ -55,6 +55,18 @@ There is one point here, the expected return is using the whole trajectory retur
 
 $$
 
-\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau \from p_{\theta}(\tau)}[\sum_{t=0}^{t=T}\nabla_{\theta}log \pi_{\theta}(a_t|s_t)G_t]
+\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau \mathcal p_{\theta}(\tau)}[\sum_{t=0}^{t=T}\nabla_{\theta}log \pi_{\theta}(a_t|s_t)G_t]
 
 $$
+
+# Problem
+The main problem that we want to solve is to maximize the expected return:
+
+$$
+
+\theta^{*} = \argmax_{\theta} \mathbb{E}_{\tau \mathcal p_{\theta}(\tau)} \sum_{t=0}^{t=T} log \pi_{\theta}(a_t|s_t) G_t
+
+$$
+
+# Observations
+REINFORCE collects an episode. Calculates the returns. Then train the policy on the samples of this episode once.

@@ -23,5 +23,5 @@ class ReplayBuffer():
 
         self.idx += 1
 
-        if self.idx > self.size:
+        if self.idx >= self.size:
             self.idx = 0

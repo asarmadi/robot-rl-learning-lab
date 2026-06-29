@@ -9,13 +9,13 @@ seed              = 0
 torch.manual_seed(seed)
 
 # DQN Hyper-Parameters
-n_episodes         = 100
+n_episodes         = 20000
 epsilon            = 0.7  # Probability for taking random actions
 action_dim         = 10   # Number of bins for the action space
 gamma              = 0.9  # Discount factor
 initial_data_size  = 1000 # This is used to make sure, we train the network after dataset has some samples and not train only on few samples in the begining
 update_rate        = 500 # Number of steps used to copy the online network to the target network.
-replay_buffer_size = 100000
+replay_buffer_size = 50000
 
 # Training Hyper-Parameters
 batch_size        = 64
@@ -74,7 +74,7 @@ state = env.current_state
 
 while True:
     state = torch.as_tensor(state,dtype=torch.float32,device=device)
-    action = agent.act_greedy(Q_target.predict(state.squeeze(-1)).detach().numpy())
+    action = agent.act_greedy(Q_online.predict(state.squeeze(-1)).detach().numpy())
     next_state, reward, reached_goal = env.step(state, agent.actions[action])
     states_for_plotting.append(state.detach().numpy())
     print(f'Reward: {reward}')

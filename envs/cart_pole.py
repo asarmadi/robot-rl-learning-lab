@@ -9,7 +9,8 @@ from matplotlib.animation import FuncAnimation
 class CartPole(Environment):
     def __init__(self, method):
         super().__init__()
-        self.state_dim = 4
+        self.state_dim  = 4
+        self.action_dim = 1
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
         self.init_state     = torch.zeros((self.state_dim,1))
@@ -21,8 +22,8 @@ class CartPole(Environment):
         self.l               = 0.5
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
-        self.reached_goal    = False
-        self.reach_threshold = 0.1
+        self.terminate    = False
+        self.reach_threshold = 0.05
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
 
         self.save_dir        = f'./logs/cartPole_{method}'
@@ -32,7 +33,7 @@ class CartPole(Environment):
 
     def reset(self):
         self.current_state = self.init_state
-        self.reached_goal  = False
+        self.terminate  = False
 
     def step(self, state, action):
         state_d = torch.zeros((self.state_dim, 1))
@@ -49,15 +50,15 @@ class CartPole(Environment):
         next_state[2] = next_state[2] % (2*torch.pi)
         
         # We want to make the pole upright. It is negative, because we want to maximize
-        if next_state[2] < torch.pi:
-            reward = -torch.linalg.norm(next_state-self.terminal_state)
+        if next_state[2] < self.reach_threshold:
+            reward = 0
+        elif next_state[2] > (2*torch.pi - self.reach_threshold):
+            reward = 0
         else:
-            diff_    = next_state-self.terminal_state
-            diff_[2] = 2*torch.pi - next_state[2]
-            reward = -torch.linalg.norm(diff_)
-        if -reward < self.reach_threshold or next_state[0] > self.x_lim or next_state[0] < -self.x_lim:
-            self.reached_goal = True
-        return next_state, reward, self.reached_goal
+            reward = -1
+        if reward == 0 or next_state[0] > self.x_lim or next_state[0] < -self.x_lim:
+            self.terminate = True
+        return next_state, reward, self.terminate
     
     def plot_states(self, states):
         fig, ax = plt.subplots()
@@ -80,11 +81,11 @@ class CartPole(Environment):
             fig,
             update_frame,
             frames=len(states),
-            interval=self.dt*10,
+            interval=self.dt*1000,
             blit=True
         )
 
-        ani.save(f'{self.save_dir}/animation/cartPole.gif', writer="pillow", fps=2)
+        ani.save(f'{self.save_dir}/animation/cartPole.gif', writer="pillow", fps=int(1 / self.dt))
         plt.close(fig)
         plt.close()
 

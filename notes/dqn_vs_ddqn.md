@@ -27,3 +27,8 @@ $$
 R + \gamma Q_{target}(S', \argmax_{a'}Q_{online}(S',a'))
 
 $$
+
+# Observations
+One of the main limitations of DQN style algorithms is that they are working on discrete action space. Therefore, for most of the robotics problems that we deal with continous actions, we need to discretize the actions.
+
+We keep a replay buffer of a constant size and we add the new samples like FIFO. Each time also, we train only on a batch of samples randomly selected from this buffer.

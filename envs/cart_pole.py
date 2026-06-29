@@ -22,7 +22,7 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.reached_goal    = False
-        self.reach_threshold = 0.05
+        self.reach_threshold = 0.1
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
 
         self.save_dir        = f'./logs/cartPole_{method}'

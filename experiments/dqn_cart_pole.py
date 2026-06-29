@@ -77,7 +77,7 @@ while True:
     action = agent.act_greedy(Q_target.predict(state.squeeze(-1)).detach().numpy())
     next_state, reward, reached_goal = env.step(state, agent.actions[action])
     states_for_plotting.append(state.detach().numpy())
-
+    print(f'Reward: {reward}')
     if reached_goal:
         break
 

@@ -9,12 +9,13 @@ seed              = 0
 torch.manual_seed(seed)
 
 # DQN Hyper-Parameters
-n_episodes        = 20
-epsilon           = 0.7  # Probability for taking random actions
-action_dim        = 10   # Number of bins for the action space
-gamma             = 0.9  # Discount factor
-initial_data_size = 1000 # This is used to make sure, we train the network after dataset has some samples and not train only on few samples in the begining
-update_rate       = 500 # Number of steps used to copy the online network to the target network.
+n_episodes         = 100
+epsilon            = 0.7  # Probability for taking random actions
+action_dim         = 10   # Number of bins for the action space
+gamma              = 0.9  # Discount factor
+initial_data_size  = 1000 # This is used to make sure, we train the network after dataset has some samples and not train only on few samples in the begining
+update_rate        = 500 # Number of steps used to copy the online network to the target network.
+replay_buffer_size = 100000
 
 # Training Hyper-Parameters
 batch_size        = 64
@@ -41,7 +42,7 @@ training = Training(batch_size=batch_size,
                     target_network=Q_target,
                     online_network=Q_online)
 
-replay_buffer = ReplayBuffer()
+replay_buffer = ReplayBuffer(size=replay_buffer_size,state_dim=env.state_dim)
 
 step = 0
 
@@ -52,9 +53,9 @@ for episode in range(n_episodes):
 
     while True:
         state = torch.as_tensor(state,dtype=torch.float32,device=device)
-        action = agent.act(Q_online.predict(state).detach().numpy())
+        action = agent.act(Q_online.predict(state.squeeze(-1)).detach().numpy())
         next_state, reward, reached_goal = env.step(state, agent.actions[action])
-        replay_buffer.additem(state, next_state, reward, action)
+        replay_buffer.additem(state,next_state,reward,action)
 
         if reached_goal:
             break
@@ -62,7 +63,7 @@ for episode in range(n_episodes):
         step += 1
         state = next_state
         
-        if (len(replay_buffer) > initial_data_size): # We update the online network after collecting inital number of samples
+        if (step > initial_data_size): # We update the online network after collecting inital number of samples
             training.train(replay_buffer, copy_network=(step % update_rate))
 
 
@@ -73,7 +74,7 @@ state = env.current_state
 
 while True:
     state = torch.as_tensor(state,dtype=torch.float32,device=device)
-    action = agent.act_greedy(Q_target.predict(state).detach().numpy())
+    action = agent.act_greedy(Q_target.predict(state.squeeze(-1)).detach().numpy())
     next_state, reward, reached_goal = env.step(state, agent.actions[action])
     states_for_plotting.append(state.detach().numpy())
 

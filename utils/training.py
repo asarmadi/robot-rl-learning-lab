@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
 
 class Training:
     def __init__(self, batch_size, lr, gamma, online_network, target_network, device='cpu', method='DQN'):
@@ -19,33 +18,27 @@ class Training:
         if copy_network == 0:
             self.target_network.load_state_dict(self.online_network.state_dict())
 
-        dataLoader = DataLoader(
-            replay_buffer,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=0
-        )
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.online_network.parameters(), lr=self.lr)
 
         self.online_network.train()
         self.target_network.eval()
 
-        state, next_state, reward, action = next(iter(dataLoader))
+        state, next_state, reward, action = replay_buffer.getitem(self.batch_size)
+        
         optimizer.zero_grad()
         if self.method == 'DQN':
-           values, _ = torch.max(self.target_network.predict(next_state).squeeze(0),dim=1)
+           values, _ = torch.max(self.target_network.predict(next_state),dim=1)
            
         elif self.method == 'DDQN':
-           _, indices = torch.max(self.online_network.predict(next_state).squeeze(0),dim=1)
-           values = self.target_network.predict(next_state)[:,indices].squeeze(0)
+           _, indices = torch.max(self.online_network.predict(next_state),dim=1)
+           values = self.target_network.predict(next_state)[:,indices]
 
-        target = (reward + values*self.gamma).unsqueeze(1)
+        target = (reward.squeeze(-1) + values*self.gamma)
 
-        
-        state = torch.as_tensor(state.squeeze(-1),dtype=torch.float32,device=self.device)
-        output = self.online_network(state).gather(dim=1, index=action.unsqueeze(1))
-        loss = criterion(output, target)
+    
+        output = self.online_network(state).gather(dim=1, index=action.long())
+        loss = criterion(output.squeeze(-1), target)
 
         loss.backward()
         optimizer.step()

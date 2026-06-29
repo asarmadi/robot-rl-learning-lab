@@ -27,7 +27,6 @@ class MLP(nn.Module):
     def predict(self, x):
         device = next(self.parameters()).device
         x = torch.as_tensor(x, dtype=torch.float32, device=device)
-        x = x.unsqueeze(0).squeeze(-1)
 
         with torch.no_grad():
             return self(x)

@@ -32,3 +32,9 @@ $$
 One of the main limitations of DQN style algorithms is that they are working on discrete action space. Therefore, for most of the robotics problems that we deal with continous actions, we need to discretize the actions.
 
 We keep a replay buffer of a constant size and we add the new samples like FIFO. Each time also, we train only on a batch of samples randomly selected from this buffer.
+
+I observed that if I reduce the bins for the action it might find the solution faster. I reduced the bins from 10 to 2. This means we only have two actions full thrust right or left.
+
+I also noticed that the update rate of the target network is important. I reduced that to 4 while I'm training the online network at every step after I collected 1000 samples.
+
+I also observed that having a high epsilon in the beginning will help exploration and then we need to reduce epsilon to exploit.

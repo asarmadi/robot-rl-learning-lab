@@ -25,4 +25,10 @@ class epsilonGreedy(Agent):
             idx = np.random.randint(len(max_indices))
             return max_indices[idx]
         return max_indices
+    
+    def set_epsilon(self, epsilon):
+        '''
+        I added this function to be able to control exploration
+        '''
+        self.epsilon = epsilon
 

@@ -69,4 +69,8 @@ $$
 $$
 
 # Observations
-REINFORCE collects an episode. Calculates the returns. Then train the policy on the samples of this episode once.
+REINFORCE collects an episode. Calculates the returns. Then train the policy on the samples of this episode once (there is no batching the data).
+
+It has to wait till the end of the episode to train the policy because it needs to first generate the returns and then train (It does not bootstrap).
+
+The main difference between DQN and REINFORCE is that DQN using a replay buffer that uses previous samples to still train the current actiuon value function, therefore, it is an off-policy method. However, REINFORCE uses only the current data collected for the current episode to update the policy and it is not using the previous data to train the policy, therefore, it is an on-policy method.

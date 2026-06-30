@@ -1,5 +1,6 @@
 from envs.cart_pole import CartPole
 from agents.mlp import MLP
+from utils.reinforce_training import Training
 
 # Genral hyper-parameters
 n_episodes = 10000
@@ -9,9 +10,14 @@ gamma      = 0.9 # Discount factor
 hidden_dim = 128
 n_layers   = 2
 
+# Policy training hyper-parameters
+lr = 0.001
+device = 'cpu'
+
 
 env   = CartPole(method='REINFORCE')
 agent = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=env.action_dim)
+training  = Training(lr, policy, device='cpu', method='REINFORCE')
 
 for episode in range(n_episodes):
     env.reset()
@@ -35,5 +41,8 @@ for episode in range(n_episodes):
     g = 0
     i = len(rewards) - 1
     for reward in rewards[::-1]:
+        # We use the same list to calculate the returns
         rewards[i] = gamma * g + reward
         i -= 1
+
+    training.train(torch.stack(states), torch.stack(actions), torch.stack(rewards))

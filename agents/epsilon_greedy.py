@@ -2,9 +2,13 @@ import numpy as np
 from agents.agent import Agent
 
 class epsilonGreedy(Agent):
-    def __init__(self, action_dim, seed, epsilon, environment='GridWorld'):
+    def __init__(self, action_dim, seed, epsilon_max, epsilon_min=0.05, decay_rate=0.001, environment='GridWorld'):
         super().__init__(seed=seed, action_dim=action_dim)
-        self.epsilon = epsilon
+        self.epsilon_max = epsilon_max
+        self.epsilon_min = epsilon_min
+        self.decay_rate  = decay_rate
+        self.epsilon     = epsilon_max
+
         if environment == 'GridWorld':
             self.actions = [np.array([-1,0]), np.array([1,0]), np.array([0,1]), np.array([0,-1])] # Down, Up, Right, Left
         else:
@@ -26,9 +30,9 @@ class epsilonGreedy(Agent):
             return max_indices[idx]
         return max_indices
     
-    def set_epsilon(self, epsilon):
+    def set_epsilon(self, step):
         '''
         I added this function to be able to control exploration
         '''
-        self.epsilon = epsilon
+        self.epsilon = self.epsilon_min + (self.epsilon_max - self.epsilon_min) * np.exp(-self.decay_rate * step)
 

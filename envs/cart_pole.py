@@ -60,7 +60,7 @@ class CartPole(Environment):
             self.terminate = True
         return next_state, reward, self.terminate
     
-    def plot_states(self, states):
+    def plot_states(self, states, actions):
         fig, ax = plt.subplots()
         ax.set_xlim(-2, 2)
         ax.set_ylim(-2, 2)
@@ -89,13 +89,16 @@ class CartPole(Environment):
         plt.close(fig)
         plt.close()
 
-        fig, axes = plt.subplots(4, 1)
+        fig, axes = plt.subplots(5, 1)
 
         state_names = [r'$x$', r'$\dot{x}$', r'$\theta$', r'$\dot{\theta}$']
 
         for i in range(self.state_dim):
             axes[i].plot(np.array(states)[:,i], label=state_names[i])
             axes[i].legend()
+
+        axes[self.state_dim].plot(np.array(actions), label='F')
+        axes[self.state_dim].legend()
 
         plt.savefig(f'{self.save_dir}/states.png')
         plt.close(fig)

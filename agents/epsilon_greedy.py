@@ -2,7 +2,7 @@ import numpy as np
 from agents.agent import Agent
 
 class epsilonGreedy(Agent):
-    def __init__(self, action_dim, seed, epsilon_max, epsilon_min=0.05, decay_rate=0.001, environment='GridWorld'):
+    def __init__(self, action_dim, seed, epsilon_max, epsilon_min=0.05, decay_rate=0.00001, environment='GridWorld'):
         super().__init__(seed=seed, action_dim=action_dim)
         self.epsilon_max = epsilon_max
         self.epsilon_min = epsilon_min

@@ -9,7 +9,7 @@ seed              = 0
 torch.manual_seed(seed)
 
 # DQN Hyper-Parameters
-n_episodes         = 1000
+n_episodes         = 3000
 epsilon            = 1.0  # Probability for taking random actions
 action_dim         = 10   # Number of bins for the action space
 gamma              = 0.9  # Discount factor
@@ -47,7 +47,7 @@ replay_buffer = ReplayBuffer(size=replay_buffer_size,state_dim=env.state_dim)
 step = 1
 
 for episode in range(n_episodes):
-    print(f'Episode: {episode}')
+    print(f'Episode: {episode}, Epsilon: {agent.epsilon}')
     env.reset()
     state = env.current_state
 

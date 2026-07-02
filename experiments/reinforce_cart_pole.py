@@ -55,23 +55,25 @@ for episode in range(n_episodes):
         i -= 1
     training.train(torch.stack(states), torch.stack(actions), torch.tensor(rewards))
 
-env.reset()
-state = env.current_state
-states_for_plotting = []
-actions_for_plotting = []
+    # plotting the result every 1000 episodes
+    if episode % 1000 == 0:
+        env.reset()
+        state = env.current_state
+        states_for_plotting = []
+        actions_for_plotting = []
 
-while True:
-    logits = agent.predict(state.squeeze(-1)).detach()
-    distribution = torch.distributions.Categorical(logits=logits)
-    action = distribution.sample()
-    next_state, reward, terminate = env.step(state, agent.actions[action])
-    states_for_plotting.append(state.detach().numpy())
-    actions_for_plotting.append(agent.actions[action])
+        while True:
+            logits = agent.predict(state.squeeze(-1)).detach()
+            distribution = torch.distributions.Categorical(logits=logits)
+            action = distribution.sample()
+            next_state, reward, terminate = env.step(state, agent.actions[action])
+            states_for_plotting.append(state.detach().numpy())
+            actions_for_plotting.append(agent.actions[action])
 
-    print(f'Reward: {reward}')
-    if terminate:
-        break
+            print(f'Reward: {reward}')
+            if terminate:
+                break
+            
+            state = next_state
 
-    state = next_state
-
-env.plot_states(states_for_plotting, actions_for_plotting)
+        env.plot_states(states_for_plotting, actions_for_plotting)

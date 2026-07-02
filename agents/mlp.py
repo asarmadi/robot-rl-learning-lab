@@ -16,6 +16,8 @@ class MLP(nn.Module):
 
         self.layers.append(nn.Linear(hidden_dim, output_dim))
 
+        self.actions = torch.linspace(-10, 10, output_dim)
+
     def forward(self, x):
         for i, layer in enumerate(self.layers):
             x = layer(x)
@@ -23,7 +25,7 @@ class MLP(nn.Module):
             if i < len(self.layers) - 1:
                 x = self.activation(x)
         # To get the probabilities for the last layer
-        x = self.softmax(x)
+        #x = self.softmax(x)
         return x
     
     def predict(self, x):

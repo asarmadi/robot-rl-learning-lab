@@ -74,3 +74,7 @@ REINFORCE collects an episode. Calculates the returns. Then train the policy on 
 It has to wait till the end of the episode to train the policy because it needs to first generate the returns and then train (It does not bootstrap).
 
 The main difference between DQN and REINFORCE is that DQN using a replay buffer that uses previous samples to still train the current actiuon value function, therefore, it is an off-policy method. However, REINFORCE uses only the current data collected for the current episode to update the policy and it is not using the previous data to train the policy, therefore, it is an on-policy method.
+
+The exploration part of the REINFORCE comes from the policy itself. The policy is generating probabilities for each action (in discrete action space). During the rollout, we sample from these probabilities. Sampling helps to try low probability actions. However, if the network starts to be biased towards one action, it becomes rare to try low probability ones.
+
+REINFORCE compared with DQN needs more interactions with the environment (more episodes and more steps), since it is not using previous trajectories each time training the policy. In DQN, the replay buffer is a very important element as it helps to reuse the old samples along with the new collected samples.

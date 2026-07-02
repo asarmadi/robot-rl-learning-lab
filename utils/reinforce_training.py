@@ -16,8 +16,11 @@ class Training:
         self.policy.train()
         
         optimizer.zero_grad()
+        
+        #loss = -(torch.log(self.policy(states).gather(dim=1, index=actions.long())).squeeze(-1)*returns).sum() This Gives me nan
 
-        loss = -(torch.log(self.policy(states).gather(dim=1, index=actions.long()))*returns).sum(dim=1)
+        loss = -(torch.log_softmax(self.policy(states), dim=1).gather(dim=1, index=actions.long()).squeeze(-1) * returns).mean()
+
 
         loss.backward()
         optimizer.step()

@@ -10,7 +10,6 @@ class CartPole(Environment):
     def __init__(self, method):
         super().__init__()
         self.state_dim  = 4
-        self.action_dim = 1
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
         self.init_state     = torch.zeros((self.state_dim,1))
@@ -58,14 +57,18 @@ class CartPole(Environment):
         
         # We want to make the pole upright. It is negative, because we want to maximize
         if next_state[2] < self.reach_threshold:
-            reward = 1
+            reward = 0
             self.upright_counter += 1
         elif next_state[2] > (2*torch.pi - self.reach_threshold):
-            reward = 1
+            reward = 0
             self.upright_counter += 1
         else:
             self.upright_counter = 0 # To make sure if the pole is out of the upright poisiton, we reset
             reward = -1
+
+        # To encourage the agent to stay at the upright position
+        if self.upright_counter > 0:
+            reward = self.upright_counter
 
         # For the cases that the agent goes to infinity on x
         if next_state[0] > self.x_lim or next_state[0] < -self.x_lim:

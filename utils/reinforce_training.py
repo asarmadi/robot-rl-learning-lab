@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import torch.optim as optim
 
 class Training:
@@ -31,5 +30,4 @@ class Training:
 
         loss.backward()
         optimizer.step()
-
    

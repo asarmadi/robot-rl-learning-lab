@@ -4,9 +4,9 @@ from agents.mlp import MLP
 from utils.reinforce_training import Training
 
 # Genral hyper-parameters
-n_episodes = 10000
+n_episodes = 10001
 gamma      = 0.9 # Discount factor
-action_dim = 10
+action_dim = 2
 seed       = 0
 
 # Policy hyper-parameters
@@ -31,6 +31,8 @@ for episode in range(n_episodes):
     actions = []
     rewards = []
 
+    step = 0
+
     while True:
         # Here the cart pole has a discrete output, therefore, we are choosing the maximum as the action
         # For each bin, we have corresponding probabilities
@@ -46,6 +48,11 @@ for episode in range(n_episodes):
         states.append(state.squeeze(-1))
         actions.append(action.unsqueeze(-1))
         rewards.append(reward)
+        
+        step += 1
+
+        if step > 1000:
+            break
     
     g = 0
     i = len(rewards) - 1
@@ -64,8 +71,7 @@ for episode in range(n_episodes):
 
         while True:
             logits = agent.predict(state.squeeze(-1)).detach()
-            distribution = torch.distributions.Categorical(logits=logits)
-            action = distribution.sample()
+            action = logits.argmax()
             next_state, reward, terminate = env.step(state, agent.actions[action])
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(agent.actions[action])
@@ -76,4 +82,4 @@ for episode in range(n_episodes):
             
             state = next_state
 
-        env.plot_states(states_for_plotting, actions_for_plotting)
+        env.plot_states(states_for_plotting, actions_for_plotting, name_str=episode//1000)

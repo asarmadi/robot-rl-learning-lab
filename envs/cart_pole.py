@@ -79,7 +79,7 @@ class CartPole(Environment):
         
         return next_state, reward, self.terminate
     
-    def plot_states(self, states, actions):
+    def plot_states(self, states, actions, name_str=''):
         fig, ax = plt.subplots()
         ax.set_xlim(-2, 2)
         ax.set_ylim(-2, 2)
@@ -104,7 +104,7 @@ class CartPole(Environment):
             blit=True
         )
 
-        ani.save(f'{self.save_dir}/animation/cartPole.gif', writer="pillow", fps=int(1 / self.dt))
+        ani.save(f'{self.save_dir}/animation/cartPole{name_str}.gif', writer="pillow", fps=int(1 / self.dt))
         plt.close(fig)
         plt.close()
 

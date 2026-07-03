@@ -7,7 +7,7 @@ from utils.value_training import ValueTraining
 
 method = 'REINFORCE_w_baseline'
 # Genral hyper-parameters
-n_episodes = 1000
+n_episodes = 4001
 gamma      = 0.9 # Discount factor
 action_dim = 10
 seed       = 0
@@ -59,8 +59,9 @@ for episode in range(n_episodes):
         rewards[i] = gamma * g + reward
         i -= 1
 
-    training.train(torch.stack(states), torch.stack(actions), torch.tensor(rewards))
     v_training.train(torch.stack(states), torch.tensor(rewards))
+
+    training.train(torch.stack(states), torch.stack(actions), torch.tensor(rewards))
 
     # plotting the result every 1000 episodes
     if episode % 1000 == 0:

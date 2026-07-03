@@ -7,18 +7,19 @@ class Training:
         self.method         = method
         self.lr             = lr
         self.device         = device
+        self.optimizer      = optim.Adam(self.policy.parameters(), lr=self.lr)
+
         if method == 'REINFORCE_w_baseline':
             self.value_function = value_function
 
     def train(self, states, actions, returns):
 
-        optimizer = optim.Adam(self.policy.parameters(), lr=self.lr)
 
         self.policy.train()
         if self.method == 'REINFORCE_w_baseline':
             self.value_function.eval()
         
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         
         #loss = -(torch.log(self.policy(states).gather(dim=1, index=actions.long())).squeeze(-1)*returns).sum() This Gives me nan
         if self.method == 'REINFORCE':
@@ -29,5 +30,5 @@ class Training:
 
 
         loss.backward()
-        optimizer.step()
+        self.optimizer.step()
    

@@ -8,3 +8,6 @@ J(\theta) = - \sum_{t=0}^{T} \pi_{\theta}(a_t|s_t) (G_t - V_{\phi}(s_t))
 $$
 
 where $V_{\phi}$ is a separate neural network with $\phi$ as weights. We train the value function on a set of samples collected during an episode to train the model.
+
+# Observation
+The REINFORCE exploaration problem still exists in this algorithm as well.

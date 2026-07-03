@@ -18,6 +18,19 @@ class MLP(nn.Module):
 
         self.actions = torch.linspace(-10, 10, output_dim)
 
+        self.init_weights()
+
+    def init_weights(self):
+        # Normal hidden-layer initialization
+        for layer in self.layers:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+                nn.init.zeros_(layer.bias)
+
+        # Make initial logits exactly zero
+        nn.init.zeros_(self.layers[-1].weight)
+        nn.init.zeros_(self.layers[-1].bias)
+
     def forward(self, x):
         for i, layer in enumerate(self.layers):
             x = layer(x)

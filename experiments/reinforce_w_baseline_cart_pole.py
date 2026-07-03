@@ -25,10 +25,10 @@ torch.manual_seed(seed)
 env   = CartPole(method=method)
 agent = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=action_dim)
 V_phi = MLP_V(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=1) # This is the value function estimator, the output is one as we estimate the expected return for a given state 
-training  = Training(lr, agent, device='cpu', method=method, value_function=V_phi)
+training  = Training(lr, agent, device=device, method=method, value_function=V_phi)
 v_training = ValueTraining(lr, value_network=V_phi, device=device)
 
-for episode in range(n_episodes):
+for episode in range(1,n_episodes):
     print(f'Episode: {episode}')
     env.reset()
     state = env.current_state
@@ -39,9 +39,11 @@ for episode in range(n_episodes):
     while True:
         # Here the cart pole has a discrete output, therefore, we are choosing the maximum as the action
         # For each bin, we have corresponding probabilities
-        logits = agent.predict(state.squeeze(-1)).detach()
+        logits = agent.predict(state.squeeze(-1))
         distribution = torch.distributions.Categorical(logits=logits)
         action = distribution.sample()
+        breakpoint()
+
         next_state, reward, terminate = env.step(state, agent.actions[action])
 
         if terminate:
@@ -56,7 +58,8 @@ for episode in range(n_episodes):
     i = len(rewards) - 1
     for reward in rewards[::-1]:
         # We use the same list to calculate the returns
-        rewards[i] = gamma * g + reward
+        g = gamma * g + reward
+        rewards[i] = g
         i -= 1
 
     v_training.train(torch.stack(states), torch.tensor(rewards))

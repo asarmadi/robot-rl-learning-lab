@@ -15,6 +15,7 @@ epsilon    = 0.9 # I added this to encourage exploration
 # Policy hyper-parameters
 hidden_dim = 128
 n_layers   = 2
+max_action = 2
 
 # Policy training hyper-parameters
 lr = 0.001
@@ -23,7 +24,7 @@ device = 'cpu'
 torch.manual_seed(seed)
 
 env   = CartPole(method='REINFORCE')
-agent = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=action_dim)
+agent = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=action_dim, max_action=max_action)
 training  = Training(lr, agent, device='cpu', method='REINFORCE')
 
 for episode in range(1,n_episodes):
@@ -39,8 +40,8 @@ for episode in range(1,n_episodes):
     while True:
         # Here the cart pole has a discrete output, therefore, we are choosing the maximum as the action
         # For each bin, we have corresponding probabilities
-        logits = agent.predict(state.squeeze(-1))
-        distribution = torch.distributions.Categorical(logits=logits)
+        logits = agent(state.squeeze(-1))
+        distribution = torch.distributions.Categorical(logits=logits.detach())
         action = distribution.sample()
         next_state, reward, terminate = env.step(state, agent.actions[action])
 
@@ -69,22 +70,4 @@ for episode in range(1,n_episodes):
 
     # plotting the result every 1000 episodes
     if episode % 1000 == 0:
-        env.reset()
-        state = env.current_state
-        states_for_plotting = []
-        actions_for_plotting = []
-
-        while True:
-            logits = agent.predict(state.squeeze(-1)).detach()
-            action = logits.argmax()
-            next_state, reward, terminate = env.step(state, agent.actions[action])
-            states_for_plotting.append(state.detach().numpy())
-            actions_for_plotting.append(agent.actions[action])
-
-            print(f'Reward: {reward}')
-            if terminate:
-                break
-            
-            state = next_state
-
-        env.plot_states(states_for_plotting, actions_for_plotting, name_str=episode//1000)
+        env.test_policy(agnet, episode)

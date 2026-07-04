@@ -7,7 +7,7 @@ from utils.reinforce_training import Training
 # Genral hyper-parameters
 n_episodes = 10001
 gamma      = 0.99 # Discount factor
-action_dim = 2
+action_dim = 20
 seed       = 0
 epsilon    = 0.9 # I added this to encourage exploration 
 
@@ -44,7 +44,7 @@ for episode in range(1,n_episodes):
         action = distribution.sample()
         next_state, reward, terminate = env.step(state, agent.actions[action])
 
-        if terminate:
+        if terminate == 'terminal' or terminate == 'truncate':
             break
 
         state = next_state

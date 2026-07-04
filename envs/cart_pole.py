@@ -123,5 +123,26 @@ class CartPole(Environment):
         plt.close(fig)
         plt.close()
 
+    def test_policy(self, policy, episode):
+        self.reset()
+        state = self.current_state
+        states_for_plotting = []
+        actions_for_plotting = []
+
+        while True:
+            logits = policy.predict(state.squeeze(-1)).detach()
+            action = logits.argmax()
+            next_state, reward, terminate = self.step(state, policy.actions[action])
+            states_for_plotting.append(state.detach().numpy())
+            actions_for_plotting.append(policy.actions[action])
+
+            print(f'Reward: {reward}')
+            if terminate == 'terminal' or terminate == 'truncate':
+                break
+            
+            state = next_state
+
+        self.plot_states(states_for_plotting, actions_for_plotting, name_str=episode//1000)
+
 
         

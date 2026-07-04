@@ -13,7 +13,7 @@ class CartPole(Environment):
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
         self.init_state     = torch.zeros((self.state_dim,1))
-        self.init_state[2]  = torch.pi
+        self.init_state[2]  = torch.pi//18
         self.terminal_state = torch.zeros((self.state_dim,1))
         # Cart-pole hyper-parameters
         self.M               = 1.0
@@ -22,10 +22,10 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.terminate       = 'running'
-        self.reach_threshold = 0.05
+        self.reach_threshold = torch.pi//180 # 1 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
         self.upright_counter = 0   # TO keep track of the agent when it is stable upright
-        self.upright_threshold = 1 # Number of steps that we consider the pole to be upright
+        self.upright_threshold = 50 # Number of steps that we consider the pole to be upright
 
         if 'upright' in method:
             self.upright_threshold = 50
@@ -142,7 +142,7 @@ class CartPole(Environment):
             
             state = next_state
 
-        self.plot_states(states_for_plotting, actions_for_plotting, name_str=episode//1000)
+        self.plot_states(states_for_plotting, actions_for_plotting, name_str=episode)
 
 
         

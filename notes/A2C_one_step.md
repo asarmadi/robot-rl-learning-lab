@@ -26,3 +26,6 @@ $$
 \Phi \leftarrow \Phi + \alpha_{\Phi} \delta_t \nabla_{\Phi} V_{\Phi}(s_t)
 
 $$
+
+# Observation
+I observed that the policy became biased after few episodes. I realized reducing the learnig rate can solve that issue. We should not make the network overfit on those samples. A2C still has the exploration issue.

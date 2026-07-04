@@ -41,7 +41,7 @@ for episode in range(1,n_episodes):
         # Here the cart pole has a discrete output, therefore, we are choosing the maximum as the action
         # For each bin, we have corresponding probabilities
         logits = agent(state.squeeze(-1))
-        distribution = torch.distributions.Categorical(logits=logits.detach())
+        distribution = torch.distributions.Categorical(logits=logits)
         action = distribution.sample()
         breakpoint()
 

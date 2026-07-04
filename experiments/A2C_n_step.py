@@ -9,6 +9,8 @@ from estimators.mlp import MLP as MLP_V
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
+step_size  = 5  # This is the n value for the future n steps of the algorithm
+c_ent      = 0.001 # This is the entropy coefficient 
 
 # Policy hyper-parameters
 n_layers   = 2
@@ -32,6 +34,12 @@ for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
+    step_counter = 0
+    states      = []
+    actions     = []
+    rewards     = []
+    next_states = []
+    terminates  = []
 
     while True:
         logits = agent(state.squeeze(-1))
@@ -39,9 +47,23 @@ for episode in range(1,n_episodes):
         action = distribution.sample()
         log_prob = distribution.log_prob(action)
         next_state, reward, terminate = env.step(state, agent.actions[action])
+        states.append(state)
+        actions.append(action)
+        rewards.append(reward)
+        next_states.append(next_state)
 
+        if step_counter == step_size:
+            step_counter = 0
+
+            g = V_phi(states[i].squeeze(-1)).detach()
+            i = len(rewards) - 1
+            for reward in rewards[::-1]:
+                # We use the same list to calculate the returns
+                g = gamma * g + reward
+                rewards[i] = g  # This actually has the targets for the critic
+                i -= 1
         # TD Error:
-        V_s = V_phi(state.squeeze(-1))
+        
         if terminate == 'terminal':
             delta_t = reward - V_s.detach()
             target  = torch.tensor(reward).to(device)
@@ -52,13 +74,14 @@ for episode in range(1,n_episodes):
 
         # Updating the critic
         critic_optimizer.zero_grad()
-        critic_loss = criterion(V_s, target)
+        critic_loss = criterion(V_s, torch.tensor(rewards))
         critic_loss.backward()
         critic_optimizer.step()
 
         # Updating the actor
         actor_optimizer.zero_grad()
-        actor_loss = -(log_prob * delta_t.detach())
+        entropy_loss = distribution.entropy()
+        actor_loss = -(log_prob * delta_t.detach()) - c_ent * entropy_loss
         actor_loss.backward()
         actor_optimizer.step()
 

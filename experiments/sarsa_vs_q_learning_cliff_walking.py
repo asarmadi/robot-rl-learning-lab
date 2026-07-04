@@ -11,6 +11,7 @@ action_dim = 4
 alpha      = 0.05
 gamma      = 1
 epsilon    = 0.1
+max_action = 2
 methods    = ['sarsa', 'q_learning']
 save_dir = './logs/sarsa_vs_qlearning_cliffWalking/'
 
@@ -18,7 +19,7 @@ os.makedirs(save_dir, exist_ok=True)
 os.makedirs(f'{save_dir}action_values/', exist_ok=True)
 
 env       = cliffWalking(grid_size=grid_size)
-agent     = epsilonGreedy(action_dim=action_dim, seed=seed, epsilon=epsilon)
+agent     = epsilonGreedy(action_dim=action_dim, seed=seed, epsilon=epsilon, max_action=max_action)
 
 sum_rewards_dict = {}
 ## This part presents the Sarsa Control

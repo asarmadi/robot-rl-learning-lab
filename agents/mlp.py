@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_dim, n_layers, output_dim):
+    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10):
         super().__init__()
 
         self.layers     = nn.ModuleList()
@@ -16,7 +16,7 @@ class MLP(nn.Module):
 
         self.layers.append(nn.Linear(hidden_dim, output_dim))
 
-        self.actions = torch.linspace(-10, 10, output_dim)
+        self.actions = torch.linspace(-max_action, max_action, output_dim)
 
         self.init_weights()
 

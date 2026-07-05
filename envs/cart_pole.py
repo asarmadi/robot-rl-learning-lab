@@ -22,7 +22,7 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.terminate       = 'running'
-        self.reach_threshold = torch.pi//180 # 1 Degree boundary
+        self.reach_threshold = 1*(torch.pi//180) # 2 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
         self.upright_counter = 0   # TO keep track of the agent when it is stable upright
         self.upright_threshold = 50 # Number of steps that we consider the pole to be upright
@@ -53,13 +53,12 @@ class CartPole(Environment):
         next_state = state + self.dt * state_d
         
         # To make sure we remain between [0, 360]
-        next_state[2] = next_state[2] % (2*torch.pi)
+        #if next_state[2] > 2*torch.pi or next_state[2] < -2*torch.pi:
+        #    next_state[2] = next_state[2] % (2*torch.pi)
+
         
         # We want to make the pole upright. It is negative, because we want to maximize
-        if next_state[2] < self.reach_threshold:
-            reward = 0
-            self.upright_counter += 1
-        elif next_state[2] > (2*torch.pi - self.reach_threshold):
+        if next_state[2] < self.reach_threshold and next_state[2] > - self.reach_threshold:
             reward = 0
             self.upright_counter += 1
         else:

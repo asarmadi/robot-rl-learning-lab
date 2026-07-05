@@ -7,9 +7,8 @@ from utils.reinforce_training import Training
 # Genral hyper-parameters
 n_episodes = 10001
 gamma      = 0.99 # Discount factor
-action_dim = 20
+action_dim = 2
 seed       = 0
-epsilon    = 0.9 # I added this to encourage exploration 
 
 
 # Policy hyper-parameters
@@ -18,7 +17,7 @@ n_layers   = 2
 max_action = 2
 
 # Policy training hyper-parameters
-lr = 0.001
+lr = 0.00001
 device = 'cpu'
 
 torch.manual_seed(seed)
@@ -69,5 +68,5 @@ for episode in range(1,n_episodes):
     training.train(torch.stack(states), torch.stack(actions), torch.tensor(rewards))
 
     # plotting the result every 1000 episodes
-    if episode % 1000 == 0:
-        env.test_policy(agnet, episode)
+    if episode % 50 == 0:
+        env.test_policy(agent, episode//50)

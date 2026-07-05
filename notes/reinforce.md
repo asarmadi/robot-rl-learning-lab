@@ -80,3 +80,5 @@ The exploration part of the REINFORCE comes from the policy itself. The policy i
 REINFORCE compared with DQN needs more interactions with the environment (more episodes and more steps), since it is not using previous trajectories each time training the policy. In DQN, the replay buffer is a very important element as it helps to reuse the old samples along with the new collected samples.
 
 I see a major issue with REINFORCE and that is exploration. REINFORCE is only dependant on the policy stochastic nature to produce random actions in the begining. Then the policy may become more confident about one particular set of actions. Then afterwards, mostly it will explore around that. However, in DQN, we have the $\epsilon$ greedy exploration that tries random actions even if the action value is confidant about something.
+
+I observed that leaning rate for the policy training is very important. Reducing the learning rate prevents the network from overfitting very early.

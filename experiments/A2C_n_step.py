@@ -9,15 +9,15 @@ from estimators.mlp import MLP as MLP_V
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
-step_size  = 15  # This is the n value for the future n steps of the algorithm
-c_ent      = 0.001 # This is the entropy coefficient 
+step_size  = 5  # This is the n value for the future n steps of the algorithm
+c_ent      = 0.01 # This is the entropy coefficient 
 
 # Policy hyper-parameters
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
 actor_lr   = 0.0001
-critic_lr = 0.0001
+critic_lr = 0.001
 max_action = 2
 
 env = CartPole(method='A2C_n_step')
@@ -34,7 +34,6 @@ for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
-    step_counter = 0
     states      = []
     actions     = []
     rewards     = []
@@ -56,8 +55,7 @@ for episode in range(1,n_episodes):
         next_states.append(next_state)
         terminates.append(terminate)
 
-        if step_counter == step_size or (step_counter < step_size and terminate == 'terminal') or (step_counter < step_size and terminate == 'truncate'):
-            step_counter = 0
+        if len(states) == step_size or (len(states) < step_size and terminate == 'terminal') or (len(states) < step_size and terminate == 'truncate'):
 
             if terminates[-1] == 'terminal':
                 g = 0
@@ -95,7 +93,6 @@ for episode in range(1,n_episodes):
             break
             
         state = next_state
-        step_counter += 1
 
     # plotting the result every 1000 episodes
     if episode % 50 == 0:

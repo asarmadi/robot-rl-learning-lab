@@ -9,7 +9,7 @@ from estimators.mlp import MLP as MLP_V
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
-step_size  = 5  # This is the n value for the future n steps of the algorithm
+step_size  = 15  # This is the n value for the future n steps of the algorithm
 c_ent      = 0.001 # This is the entropy coefficient 
 
 # Policy hyper-parameters
@@ -20,7 +20,7 @@ actor_lr   = 0.0001
 critic_lr = 0.0001
 max_action = 2
 
-env = CartPole(method='A2C_one_step')
+env = CartPole(method='A2C_n_step')
 agent = MLP(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=action_dim, max_action=max_action)
 V_phi = MLP_V(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=1)
 
@@ -40,55 +40,62 @@ for episode in range(1,n_episodes):
     rewards     = []
     next_states = []
     terminates  = []
+    log_probs   = []
+    entropy_loss = []
 
     while True:
         logits = agent(state.squeeze(-1))
         distribution = torch.distributions.Categorical(logits=logits)
         action = distribution.sample()
-        log_prob = distribution.log_prob(action)
+        log_probs.append(distribution.log_prob(action))
+        entropy_loss.append(distribution.entropy())
         next_state, reward, terminate = env.step(state, agent.actions[action])
-        states.append(state)
+        states.append(state.squeeze(-1))
         actions.append(action)
         rewards.append(reward)
         next_states.append(next_state)
+        terminates.append(terminate)
 
-        if step_counter == step_size:
+        if step_counter == step_size or (step_counter < step_size and terminate == 'terminal') or (step_counter < step_size and terminate == 'truncate'):
             step_counter = 0
 
-            g = V_phi(states[i].squeeze(-1)).detach()
+            if terminates[-1] == 'terminal':
+                g = 0
+            else:
+                g = V_phi(next_states[-1].squeeze(-1)).detach()
             i = len(rewards) - 1
             for reward in rewards[::-1]:
                 # We use the same list to calculate the returns
                 g = gamma * g + reward
                 rewards[i] = g  # This actually has the targets for the critic
                 i -= 1
-        # TD Error:
-        
-        if terminate == 'terminal':
-            delta_t = reward - V_s.detach()
-            target  = torch.tensor(reward).to(device)
-        else:
-            V_s_1 = V_phi(next_state.squeeze(-1)).detach()
-            delta_t = reward + gamma * V_s_1 - V_s
-            target  = reward + gamma * V_s_1
 
-        # Updating the critic
-        critic_optimizer.zero_grad()
-        critic_loss = criterion(V_s, torch.tensor(rewards))
-        critic_loss.backward()
-        critic_optimizer.step()
+            V_s = V_phi(torch.stack(states))
+            # Updating the critic
+            critic_optimizer.zero_grad()
+            critic_loss = criterion(V_s, torch.stack(rewards))
+            critic_loss.backward()
+            critic_optimizer.step()
 
-        # Updating the actor
-        actor_optimizer.zero_grad()
-        entropy_loss = distribution.entropy()
-        actor_loss = -(log_prob * delta_t.detach()) - c_ent * entropy_loss
-        actor_loss.backward()
-        actor_optimizer.step()
+            # Updating the actor
+            actor_optimizer.zero_grad()
+            actor_loss = -((torch.stack(log_probs) * (torch.stack(rewards) - V_s.detach()).squeeze(-1))).mean() - c_ent * torch.stack(entropy_loss).mean()
+            actor_loss.backward()
+            actor_optimizer.step()
+
+            states          = []
+            actions         = []
+            rewards         = []
+            next_states     = []
+            terminates      = []
+            log_probs       = []
+            entropy_loss    = []
 
         if terminate == 'terminal' or terminate == 'truncate':
             break
             
         state = next_state
+        step_counter += 1
 
     # plotting the result every 1000 episodes
     if episode % 50 == 0:

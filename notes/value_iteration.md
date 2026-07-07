@@ -13,17 +13,13 @@ The main issue with policy iteration is that it is not computationally effecient
 Value iteration combines the two state sweeps into one. Let's look again into the Bellman equation:
 
 $$
-
 v_{\pi}(s) = \sum_{a}\pi(a|s) \sum_{s',r} p(s',r|s,a)[r+\gamma V(s')],~for~all~s\in \mathbb{S}
-
 $$
 
 The optimal state-value function is defined as 
 
 $$
-
 v_{*}(s) = \max_{\pi}v_{\pi}(s)
-
 $$
 
 The Bellman optimality equation expresses the fact that the value of a state under an optimal policy must equal the expected return for the best action from that state following the optimal policy. Therefore,
@@ -39,9 +35,7 @@ $$
 Based on the definition, the value iteration algorithm treat this equation as an update rule that converges to the optimal state-value function. To be precise, the previous equation uses the optimal state-value function in the inner sum. However, value iteration considers the current state-value function as optimal and updates the state-value function:
 
 $$
-
 v_{k+1}(s) = \max_{a} \sum_{s',r} p(s',r|s,a)[r+\gamma v_k(s')]
-
 $$
 
 for all $s\inS$ and an arbitrary $v_0$.

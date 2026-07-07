@@ -22,7 +22,7 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.terminate       = 'running'
-        self.reach_threshold = 1*(torch.pi//180) # 2 Degree boundary
+        self.reach_threshold = 2*(torch.pi//180) # 2 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
         self.upright_counter = 0   # TO keep track of the agent when it is stable upright
         self.upright_threshold = 50 # Number of steps that we consider the pole to be upright
@@ -51,26 +51,20 @@ class CartPole(Environment):
         state_d[2] = state[3]
         state_d[3] = theta_dd
         next_state = state + self.dt * state_d
-        
-        # To make sure we remain between [0, 360]
-        #if next_state[2] > 2*torch.pi or next_state[2] < -2*torch.pi:
-        #    next_state[2] = next_state[2] % (2*torch.pi)
 
+        reward = 0
         
         # We want to make the pole upright. It is negative, because we want to maximize
-        if next_state[2] < self.reach_threshold and next_state[2] > - self.reach_threshold:
-            reward = 0
+        if abs(next_state[2,0]) <= self.reach_threshold:
+            reward = self.upright_counter
             self.upright_counter += 1
+            print(f'Reward: {self.upright_counter}')
         else:
             self.upright_counter = 0 # To make sure if the pole is out of the upright poisiton, we reset
             reward = -1
 
-        # To encourage the agent to stay at the upright position
-        if self.upright_counter > 0:
-            reward = self.upright_counter
-
         # For the cases that the agent goes to infinity on x
-        if next_state[0] > self.x_lim or next_state[0] < -self.x_lim:
+        if next_state[0,0] > self.x_lim or next_state[0,0] < -self.x_lim:
             self.terminate = 'truncate'
         # To encourage the agent to learn to stay at the upright position
         if self.upright_counter >= self.upright_threshold:
@@ -135,7 +129,6 @@ class CartPole(Environment):
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(policy.actions[action])
 
-            print(f'Reward: {reward}')
             if terminate == 'terminal' or terminate == 'truncate':
                 break
             

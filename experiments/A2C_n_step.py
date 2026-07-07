@@ -9,7 +9,7 @@ from estimators.mlp import MLP as MLP_V
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
-step_size  = 5  # This is the n value for the future n steps of the algorithm
+step_size  = 20  # This is the n value for the future n steps of the algorithm
 c_ent      = 0.01 # This is the entropy coefficient 
 
 # Policy hyper-parameters

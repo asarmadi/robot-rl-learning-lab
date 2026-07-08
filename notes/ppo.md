@@ -52,3 +52,5 @@ where $T$ is the rollout length. The GAE could be calculated in recursive manner
 $$
 A_t = \delta_t + \gamma \lambda A_{t+1}
 $$
+
+The thrid important element is the entropy added to the action loss to encourage exploration.

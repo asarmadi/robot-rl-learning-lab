@@ -55,7 +55,6 @@ class CartPole(Environment):
         if abs(next_state[2,0]) <= self.reach_threshold:
             reward = self.upright_counter
             self.upright_counter += 1
-            print(f'Reward: {self.upright_counter}')
         else:
             self.upright_counter = 0 # To make sure if the pole is out of the upright poisiton, we reset
             reward = -1

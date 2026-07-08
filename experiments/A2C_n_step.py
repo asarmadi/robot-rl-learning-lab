@@ -5,13 +5,14 @@ from envs.cart_pole import CartPole
 from agents.mlp import MLP
 from estimators.mlp import MLP as MLP_V
 
+
 # General hyper-parameters
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
 step_size  = 20  # This is the n value for the future n steps of the algorithm
 c_ent      = 0.01 # This is the entropy coefficient 
-
+seed       = 42
 # Policy hyper-parameters
 n_layers   = 2
 hidden_dim = 128
@@ -19,6 +20,8 @@ action_dim = 2
 actor_lr   = 0.0001
 critic_lr = 0.001
 max_action = 2
+
+torch.manual_seed(seed)
 
 env = CartPole(method='A2C_n_step')
 agent = MLP(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=action_dim, max_action=max_action)

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 import torch.optim as optim
 from envs.cart_pole import CartPole
 from agents.mlp import MLP
@@ -20,7 +21,6 @@ action_dim = 2
 actor_lr   = 0.0001
 critic_lr = 0.001
 max_action = 2
-
 torch.manual_seed(seed)
 
 env = CartPole(method='A2C_n_step')
@@ -98,5 +98,5 @@ for episode in range(1,n_episodes):
         state = next_state
 
     # plotting the result every 1000 episodes
-    if episode % 50 == 0:
-        env.test_policy(agent, episode//50)
+    if episode % 200 == 0:
+        env.test_policy(agent, episode//200)

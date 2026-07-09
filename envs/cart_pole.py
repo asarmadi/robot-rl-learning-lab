@@ -26,6 +26,7 @@ class CartPole(Environment):
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
         self.upright_counter = 0   # TO keep track of the agent when it is stable upright
         self.upright_threshold = 200 # Number of steps that we consider the pole to be upright
+        self.max_steps         = 6000 # TO prevent the running loop stays forever
 
 
         self.save_dir        = f'./logs/cartPole_{method}'
@@ -38,7 +39,7 @@ class CartPole(Environment):
         self.terminate       = 'running'
         self.upright_counter = 0
 
-    def step(self, state, action):
+    def step(self, state, action, step_counter):
         state_d = torch.zeros((self.state_dim, 1))
         theta = state[2]
         q     = (action + self.m*self.l*torch.sin(theta)*state[3]**2)/(self.M + self.m)
@@ -61,10 +62,13 @@ class CartPole(Environment):
 
         # For the cases that the agent goes to infinity on x
         if next_state[0,0] > self.x_lim or next_state[0,0] < -self.x_lim:
-            self.terminate = 'truncate'
+            self.terminate = 'terminal'
         # To encourage the agent to learn to stay at the upright position
         if self.upright_counter >= self.upright_threshold:
             self.terminate = 'terminal'
+
+        if step_counter >= self.max_steps:
+            self.terminate = 'truncate'
         
         return next_state, reward, self.terminate
     
@@ -118,10 +122,12 @@ class CartPole(Environment):
         states_for_plotting = []
         actions_for_plotting = []
 
+        step = 0
+
         while True:
             logits = policy.predict(state.squeeze(-1)).detach()
             action = logits.argmax()
-            next_state, reward, terminate = self.step(state, policy.actions[action])
+            next_state, reward, terminate = self.step(state, policy.actions[action], step)
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(policy.actions[action])
 
@@ -129,6 +135,7 @@ class CartPole(Environment):
                 break
             
             state = next_state
+            step += 1
 
         self.plot_states(states_for_plotting, actions_for_plotting, name_str=episode)
 

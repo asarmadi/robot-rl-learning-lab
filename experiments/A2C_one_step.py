@@ -9,14 +9,18 @@ from estimators.mlp import MLP as MLP_V
 n_episodes = 10000
 gamma      = 0.99  # Discount factor
 device     = 'cpu'
+seed       = 42
 
 # Policy hyper-parameters
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.0001
-critic_lr = 0.0001
+actor_lr   = 0.001
+critic_lr = 0.001
 max_action = 2
+
+torch.manual_seed(seed)
+
 
 env = CartPole(method='A2C_one_step')
 agent = MLP(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=action_dim, max_action=max_action)
@@ -32,19 +36,20 @@ for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
+    step = 0
 
     while True:
         logits = agent(state.squeeze(-1))
         distribution = torch.distributions.Categorical(logits=logits)
         action = distribution.sample()
         log_prob = distribution.log_prob(action)
-        next_state, reward, terminate = env.step(state, agent.actions[action])
+        next_state, reward, terminate = env.step(state, agent.actions[action], step)
 
         # TD Error:
         V_s = V_phi(state.squeeze(-1))
         if terminate == 'terminal':
             delta_t = reward - V_s.detach()
-            target  = torch.tensor(reward).to(device)
+            target  = torch.tensor(reward).to(device).unsqueeze(-1)
         else:
             V_s_1 = V_phi(next_state.squeeze(-1)).detach()
             delta_t = reward + gamma * V_s_1 - V_s
@@ -66,7 +71,8 @@ for episode in range(1,n_episodes):
             break
             
         state = next_state
+        step += 1
 
     # plotting the result every 1000 episodes
-    if episode % 50 == 0:
-        env.test_policy(agent, episode//50)
+    if episode % 200 == 0:
+        env.test_policy(agent, episode//200)

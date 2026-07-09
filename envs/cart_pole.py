@@ -54,7 +54,7 @@ class CartPole(Environment):
         
         # We want to make the pole upright. It is negative, because we want to maximize
         if abs(next_state[2,0]) <= self.reach_threshold:
-            reward = self.upright_counter
+            reward = 1
             self.upright_counter += 1
         else:
             self.upright_counter = 0 # To make sure if the pole is out of the upright poisiton, we reset

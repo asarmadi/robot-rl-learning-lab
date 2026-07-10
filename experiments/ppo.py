@@ -69,9 +69,9 @@ for episode in range(n_episodes):
         step += 1
         sum_rewards += reward
     rewards.append(sum_rewards)
-
+    print(f'Steps: {step}, Reward= {sum_rewards}')
 
     # plotting the result every 1000 episodes
-    if episode % 50 == 0:
-        env.test_policy(agent, episode//50)
+    if episode % 200 == 0:
+        env.test_policy(agent, episode//200)
         env.plot_rewards(rewards)

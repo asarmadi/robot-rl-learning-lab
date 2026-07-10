@@ -17,6 +17,8 @@ $$
 \mathcal{E}\min{(r_{\theta}(t)A_t, clip(r_{\theta}(t), 1-\epsilon, 1+\epsilon)A_t)}
 $$
 
+One thing to notice is the min function. The min function makes it even more pessemistic by choosing the minimum value. Our goal is to maximize, therefore, we want to prevent cases that the clipping is actually results in a larger number than the $r_{\theta}(t)A_t$.
+
 The other technique is the way they calculate the return values. It uses Generalized Advantage Estimation (GAE). In the n-step advantage estimation, tried to reduce the bias from one step advantage estimation by using n future rewards to estimate the return. However, it was dependent on the choice of the n. If we set n large, it was closer to the Monte Carlo estimation, and lower n was closer to the TD estimation. GAE uses a weighted n-step advantage estimation to get a better estimation of the return. The idea starts from the one-step TD error:
 
 $$

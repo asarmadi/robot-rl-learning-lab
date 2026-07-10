@@ -32,7 +32,7 @@ critic_optimizer = optim.Adam(V_phi.parameters(), lr=critic_lr)
 criterion   = nn.MSELoss()
 
 
-
+rewards = []
 for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
@@ -44,6 +44,8 @@ for episode in range(1,n_episodes):
     terminates  = []
     log_probs   = []
     entropy_loss = []
+    sum_rewards = 0
+    step        = 0
 
     while True:
         logits = agent(state.squeeze(-1))
@@ -51,7 +53,7 @@ for episode in range(1,n_episodes):
         action = distribution.sample()
         log_probs.append(distribution.log_prob(action))
         entropy_loss.append(distribution.entropy())
-        next_state, reward, terminate = env.step(state, agent.actions[action])
+        next_state, reward, terminate = env.step(state, agent.actions[action], step)
         states.append(state.squeeze(-1))
         actions.append(action)
         rewards.append(reward)
@@ -96,6 +98,9 @@ for episode in range(1,n_episodes):
             break
             
         state = next_state
+        step += 1
+        sum_rewards += reward
+    rewards.append(sum_rewards)
 
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

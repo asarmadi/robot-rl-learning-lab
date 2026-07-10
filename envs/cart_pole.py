@@ -24,8 +24,7 @@ class CartPole(Environment):
         self.terminate       = 'running'
         self.reach_threshold = 0.1*(torch.pi/180) # 2 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
-        self.upright_counter = 0   # TO keep track of the agent when it is stable upright
-        self.upright_threshold = 10000 # Number of steps that we consider the pole to be upright
+        self.upright_threshold = 200   # To terminate the episode when the pole is upright enough
         self.max_steps         = 12000 # TO prevent the running loop stays forever
 
 
@@ -50,15 +49,14 @@ class CartPole(Environment):
         state_d[3] = theta_dd
         next_state = state + self.dt * state_d
 
-        reward = 0
+        reward = torch.cos(next_state[2]) # It is one when upright and -1 when it falls
+        reward -= 0.01*next_state[0]**2  # To encourage staying at the x=0
+        reward -= 0.001*next_state[1]**2  # To encourage not moving
+        reward -= 0.001*next_state[3]**2  # To encourage not rotating 
+
         
         # We want to make the pole upright. It is negative, because we want to maximize
-        if abs(next_state[2,0]) <= self.reach_threshold:
-            reward = 1
-            self.upright_counter += 1
-        else:
-            self.upright_counter = 0 # To make sure if the pole is out of the upright poisiton, we reset
-            reward = -1
+        reward = -1
 
         # For the cases that the agent goes to infinity on x
         if next_state[0,0] > self.x_lim or next_state[0,0] < -self.x_lim:

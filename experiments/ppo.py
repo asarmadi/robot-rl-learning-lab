@@ -10,9 +10,9 @@ from utils.rollout_buffer import RolloutBuffer
 method     = 'PPO'
 seed       = 42
 n_episodes = 10000
-step_size  = 128  # This is different from the n-step, this is the size of the rollout buffer for training
+rollout_buffer_size  = 128  # This is different from the n-step, this is the size of the rollout buffer for training
 gamma      = 0.99 # Discount factor
-lambda_    = 0.9  # GAE weighting coefficient
+lambda_    = 0.95  # GAE weighting coefficient
 
 # Agent hyper-parameters
 n_layers   = 2
@@ -22,9 +22,10 @@ max_action = 2
 
 # Training hyper-parameters
 config = {
-'lr' : 0.001,
-'batch_size' : 128,
-'n_epochs' : 100
+'lr' : 0.0001,
+'batch_size' : 32,
+'n_epochs' : 4,
+'epsilon'  : 0.2 # This is the clipping threshold for the actor loss
 }
 
 torch.manual_seed(seed)
@@ -34,7 +35,7 @@ agent = MLP(input_dim=env.state_dim, output_dim=action_dim, n_layers=n_layers, h
 V_phi = MLP_V(input_dim=env.state_dim, n_layers=n_layers, hidden_dim=hidden_dim, output_dim=1)
 
 training       = Training(policy=agent, state_value=V_phi, config=config)
-rollout_buffer = RolloutBuffer(state_dim=env.state_dim, size=step_size, gamma=gamma, lambda_=lambda_)
+rollout_buffer = RolloutBuffer(state_dim=env.state_dim, size=rollout_buffer_size, gamma=gamma, lambda_=lambda_)
 
 rewards = []
 for episode in range(n_episodes):
@@ -54,7 +55,7 @@ for episode in range(n_episodes):
         next_state, reward, terminate = env.step(state, agent.actions[action], step)
         rollout_buffer.additem(state.squeeze(-1),next_state, reward, action, log_probs, terminate)
 
-        if len(rollout_buffer) == step_size:
+        if len(rollout_buffer) == rollout_buffer_size:
             rollout_buffer.cal_advantages(V_phi)
             training.train(rollout_buffer)
             rollout_buffer.reset()
@@ -72,3 +73,4 @@ for episode in range(n_episodes):
     # plotting the result every 1000 episodes
     if episode % 50 == 0:
         env.test_policy(agent, episode//50)
+        env.plot_rewards(rewards)

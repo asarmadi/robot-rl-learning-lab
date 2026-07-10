@@ -11,7 +11,7 @@ class RolloutBuffer():
     def getitem(self, batch_size):
         # Return one sample
         indices = torch.randint(0, self.size, (batch_size,))
-        return self.state[indices], self.advantages[indices], self.log_prob[indices]
+        return self.state[indices], self.advantages[indices], self.log_prob[indices], self.action[indices]
 
     def additem(self, state, next_state, reward, action, log_prob, terminate):
         self.state[self.idx]        = state.squeeze(-1)
@@ -28,10 +28,14 @@ class RolloutBuffer():
         # We already defined the A[t+1] = 0
         for t in range(self.size-1,-1,-1):
             if self.terminate[t] == 'terminal':
-                delta_t = reward - V_phi(s_t)
+                delta_t = self.reward[t] - V_phi(self.state[t])
             else:
-                delta_t = reward + self.gamma * V_phi(self.next_state[t]).detach() - V_phi(self.state[t]).detach()
+                delta_t = self.reward[t] + self.gamma * V_phi(self.next_state[t]).detach() - V_phi(self.state[t]).detach()
             self.advantages[t] = delta_t + self.gamma * self.lambda_ *  self.advantages[t+1]
+
+        # We normalize the advantage to get a less noisier training loss
+        self.advantages -= self.advantages.mean()
+        self.advantages /= self.advantages.std()
 
     def __len__(self):
         return self.idx
@@ -41,7 +45,7 @@ class RolloutBuffer():
         self.next_state    = torch.zeros((self.size, self.state_dim))
         self.reward        = torch.zeros((self.size, 1))
         self.action        = torch.zeros((self.size, 1))
-        self.terminate    = torch.zeros((self.size, 1))
+        self.terminate     = {}
         self.log_prob      = torch.zeros((self.size, 1))
         self.advantages    = torch.zeros((self.size, 1))
 

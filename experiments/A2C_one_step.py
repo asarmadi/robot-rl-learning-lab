@@ -15,8 +15,8 @@ seed       = 42
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.001
-critic_lr = 0.001
+actor_lr   = 0.00001
+critic_lr = 0.00001
 max_action = 2
 
 torch.manual_seed(seed)
@@ -30,13 +30,14 @@ actor_optimizer = optim.Adam(agent.parameters(), lr=actor_lr)
 critic_optimizer = optim.Adam(V_phi.parameters(), lr=critic_lr)
 criterion   = nn.MSELoss()
 
-
+rewards = []
 
 for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
     step = 0
+    sum_rewards = 0
 
     while True:
         logits = agent(state.squeeze(-1))
@@ -57,7 +58,7 @@ for episode in range(1,n_episodes):
 
         # Updating the critic
         critic_optimizer.zero_grad()
-        critic_loss = criterion(V_s, target)
+        critic_loss = criterion(V_s, target.detach())
         critic_loss.backward()
         critic_optimizer.step()
 
@@ -72,7 +73,9 @@ for episode in range(1,n_episodes):
             
         state = next_state
         step += 1
-
+        sum_rewards += reward
+    rewards.append(sum_rewards)
     # plotting the result every 1000 episodes
     if episode % 200 == 0:
         env.test_policy(agent, episode//200)
+        env.plot_rewards(rewards)

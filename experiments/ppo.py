@@ -36,12 +36,14 @@ V_phi = MLP_V(input_dim=env.state_dim, n_layers=n_layers, hidden_dim=hidden_dim,
 training       = Training(policy=agent, state_value=V_phi, config=config)
 rollout_buffer = RolloutBuffer(state_dim=env.state_dim, size=step_size, gamma=gamma, lambda_=lambda_)
 
-
+rewards = []
 for episode in range(n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
     entropy_loss = []
+    step = 0
+    sum_rewards = 0
 
     while True:
         logits = agent(state.squeeze(-1))
@@ -49,11 +51,11 @@ for episode in range(n_episodes):
         action = distribution.sample()
         log_probs = distribution.log_prob(action)
         entropy_loss.append(distribution.entropy())
-        next_state, reward, terminate = env.step(state, agent.actions[action])
-        rollout_buffer.additem(state.squeeze(-1),next_state, reward, action, log_probs)
+        next_state, reward, terminate = env.step(state, agent.actions[action], step)
+        rollout_buffer.additem(state.squeeze(-1),next_state, reward, action, log_probs, terminate)
 
-        if len(entropy_loss) == step_size or (len(entropy_loss) < step_size and terminate == 'terminal') or (len(entropy_loss) < step_size and terminate == 'truncate'):
-            rollout_buffer.cal_advantages()
+        if len(rollout_buffer) == step_size:
+            rollout_buffer.cal_advantages(V_phi)
             training.train(rollout_buffer)
             rollout_buffer.reset()
             entropy_loss = []
@@ -62,6 +64,10 @@ for episode in range(n_episodes):
             break
             
         state = next_state
+        step += 1
+        sum_rewards += reward
+    rewards.append(sum_rewards)
+
 
     # plotting the result every 1000 episodes
     if episode % 50 == 0:

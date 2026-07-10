@@ -25,8 +25,9 @@ class Training:
                 breakpoint()
             distribution = torch.distributions.Categorical(logits=logits)
             log_probs = distribution.log_prob(action).unsqueeze(-1)
+            entropy_loss = distribution.entropy()
             r_t = log_probs/prev_policy.detach()
-            actor_loss = -(torch.clip(r_t, min=(1-self.config['epsilon']), max=(1+self.config['epsilon']))*advantage.detach()).mean()
+            actor_loss = -(torch.clip(r_t, min=(1-self.config['epsilon']), max=(1+self.config['epsilon']))*advantage.detach()).mean() - self.config['c_ent'] * entropy_loss.mean()
             actor_loss.backward()
             self.actor_optimizer.step()
         

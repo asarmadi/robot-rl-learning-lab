@@ -74,6 +74,7 @@ for episode in range(1,n_episodes):
         state = next_state
         step += 1
         sum_rewards += reward
+    print(f'Steps: {step}')
     rewards.append(sum_rewards)
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

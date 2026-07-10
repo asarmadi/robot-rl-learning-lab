@@ -54,3 +54,6 @@ A_t = \delta_t + \gamma \lambda A_{t+1}
 $$
 
 The thrid important element is the entropy added to the action loss to encourage exploration.
+
+# Observations
+One of the issues that I was facing was getting NaN during training. I realized that adding advantage normalization for the rollout buffer solves the issue.

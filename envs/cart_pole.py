@@ -22,11 +22,11 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.terminate       = 'running'
-        self.reach_threshold = 2*(torch.pi/180) # 2 Degree boundary
+        self.reach_threshold = 0.1*(torch.pi/180) # 2 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
         self.upright_counter = 0   # TO keep track of the agent when it is stable upright
-        self.upright_threshold = 200 # Number of steps that we consider the pole to be upright
-        self.max_steps         = 6000 # TO prevent the running loop stays forever
+        self.upright_threshold = 10000 # Number of steps that we consider the pole to be upright
+        self.max_steps         = 12000 # TO prevent the running loop stays forever
 
 
         self.save_dir        = f'./logs/cartPole_{method}'
@@ -115,6 +115,19 @@ class CartPole(Environment):
         plt.savefig(f'{self.save_dir}/states.png')
         plt.close(fig)
         plt.close()
+
+    def plot_rewards(self, rewards):
+        plt.figure()
+
+        state_names = [r'Reward']
+
+        plt.plot(rewards)
+
+        plt.title('Cumulative Reward')
+
+        plt.savefig(f'{self.save_dir}/rewards.png')
+        plt.close()
+
 
     def test_policy(self, policy, episode):
         self.reset()

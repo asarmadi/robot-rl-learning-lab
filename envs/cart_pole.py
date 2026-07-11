@@ -23,8 +23,7 @@ class CartPole(Environment):
         self.dt              = 0.02 # 50 Hz
         self.reach_threshold = 1*(torch.pi/180) # 2 Degree boundary
         self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
-        self.upright_threshold = 200   # To terminate the episode when the pole is upright enough
-        self.max_steps         = 12000 # TO prevent the running loop stays forever
+        self.max_steps       = int(60/self.dt) # TO prevent the running loop stays forever. We want the whole episode lasts for 60 seconds
 
 
         self.save_dir        = f'./logs/cartPole_{method}'
@@ -47,17 +46,15 @@ class CartPole(Environment):
         state_d[3] = theta_dd
         next_state = state + self.dt * state_d
 
-        reward = torch.cos(next_state[2]) # It is one when upright and -1 when it falls
-        reward -= (0.01*next_state[0]**2)  # To encourage staying at the x=0
+        reward = torch.cos(next_state[2])  # It is one when upright and -1 when it is downward
+        reward -= (0.1*next_state[0]**2)   # To encourage staying at the x=0
         reward -= (0.001*next_state[1]**2)  # To encourage not moving
         reward -= (0.001*next_state[3]**2)  # To encourage not rotating 
+        reward -= (0.0001*action**2)         # To encourage consuming less action 
 
         terminate = 'running'
         # For the cases that the agent goes to infinity on x
         if next_state[0,0] > self.x_lim or next_state[0,0] < -self.x_lim:
-            terminate = 'terminal'
-        # To encourage the agent to learn to stay at the upright position
-        if self.upright_counter >= self.upright_threshold:
             terminate = 'terminal'
 
         if step_counter >= self.max_steps:

@@ -50,7 +50,7 @@ for episode in range(1,n_episodes):
         V_s = V_phi(state.squeeze(-1))
         if terminate == 'terminal':
             delta_t = reward - V_s.detach()
-            target  = torch.tensor(reward).to(device).unsqueeze(-1)
+            target  = reward
         else:
             V_s_1 = V_phi(next_state.squeeze(-1)).detach()
             delta_t = reward + gamma * V_s_1 - V_s

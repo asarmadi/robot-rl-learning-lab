@@ -10,7 +10,7 @@ from utils.rollout_buffer import RolloutBuffer
 method     = 'PPO'
 seed       = 42
 n_episodes = 10000
-rollout_buffer_size  = 128  # This is different from the n-step, this is the size of the rollout buffer for training
+rollout_buffer_size  = 512  # This is different from the n-step, this is the size of the rollout buffer for training
 gamma      = 0.99 # Discount factor
 lambda_    = 0.95  # GAE weighting coefficient
 
@@ -23,7 +23,7 @@ max_action = 2
 # Training hyper-parameters
 config = {
 'lr' : 0.0001,
-'batch_size' : 32,
+'batch_size' : 8,
 'n_epochs' : 4,
 'epsilon'  : 0.2, # This is the clipping threshold for the actor loss
 'c_ent'    : 0.001 # Entropy loss coefficient

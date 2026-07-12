@@ -12,9 +12,9 @@ class CartPole(Environment):
         self.state_dim  = 4
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
-        self.init_state     = torch.zeros((self.state_dim,1))
+        self.init_state     = torch.zeros(self.state_dim)
         self.init_state[2]  = torch.pi/18
-        self.terminal_state = torch.zeros((self.state_dim,1))
+        self.terminal_state = torch.zeros(self.state_dim)
         # Cart-pole hyper-parameters
         self.M               = 1.0
         self.m               = 0.1
@@ -22,8 +22,8 @@ class CartPole(Environment):
         self.g               = 9.8
         self.dt              = 0.02 # 50 Hz
         self.reach_threshold = 1*(torch.pi/180) # 2 Degree boundary
-        self.x_lim           = 2   # We are limiting the x to be between a thershold to prevent going to infinity
-        self.max_steps       = int(60/self.dt) # TO prevent the running loop stays forever. We want the whole episode lasts for 60 seconds
+        self.x_lim           = 3   # We are limiting the x to be between a thershold to prevent going to infinity
+        self.max_steps       = int(20/self.dt) # TO prevent the running loop stays forever. We want the whole episode lasts for 60 seconds
 
 
         self.save_dir        = f'./logs/cartPole_{method}'
@@ -36,7 +36,7 @@ class CartPole(Environment):
         self.upright_counter = 0
 
     def step(self, state, action, step_counter):
-        state_d = torch.zeros((self.state_dim, 1))
+        state_d = torch.zeros(self.state_dim)
         theta = state[2]
         q     = (action + self.m*self.l*torch.sin(theta)*state[3]**2)/(self.M + self.m)
         theta_dd = (self.g*torch.sin(theta)-q*torch.cos(theta))/(self.l*(4/3-((self.m*torch.cos(theta)**2)/(self.m+self.M))))
@@ -54,7 +54,7 @@ class CartPole(Environment):
 
         terminate = 'running'
         # For the cases that the agent goes to infinity on x
-        if next_state[0,0] > self.x_lim or next_state[0,0] < -self.x_lim:
+        if next_state[0] > self.x_lim or next_state[0] < -self.x_lim:
             terminate = 'terminal'
 
         if step_counter >= self.max_steps:
@@ -129,16 +129,16 @@ class CartPole(Environment):
 
         while True:
             if policy.type == 'discrete':
-                logits = policy.predict(state.squeeze(-1)).detach()
+                logits = policy.predict(state).detach()
                 action = logits.argmax()
                 action_env = policy.actions[action]
             else:
-                mu, _ = policy.predict(state.squeeze(-1)).detach()
-                squashed_action = torch.tanh(mu)       
-                action_env = policy.action_max * squashed_action 
+                output = policy.predict(state).detach()
+                squashed_action = torch.tanh(output[0])       
+                action_env = policy.max_action * squashed_action 
             next_state, reward, terminate = self.step(state, action_env, step)
             states_for_plotting.append(state.detach().numpy())
-            actions_for_plotting.append(policy.actions[action])
+            actions_for_plotting.append(action_env)
 
             if terminate == 'terminal' or terminate == 'truncate':
                 break

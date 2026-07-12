@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+from agents.agent import Agent
 
-class MLPC(nn.Module):
-    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10):
-        super().__init__()
+class MLPC(nn.Module, Agent):
+    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10, **kwargs):
+        super().__init__(**kwargs)
 
         self.layers     = nn.ModuleList()
         self.activation = nn.ReLU()
@@ -17,7 +18,7 @@ class MLPC(nn.Module):
 
         self.init_weights()
         self.type = 'continuous'
-        self.max_action=max_action
+        self.max_action = max_action
 
     def init_weights(self):
         # Normal hidden-layer initialization

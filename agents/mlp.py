@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+from agents.agent import Agent
 
-class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10):
-        super().__init__()
+class MLP(nn.Module, Agent):
+    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10, **kwargs):
+        super().__init__(**kwargs)
 
         self.layers     = nn.ModuleList()
         self.activation = nn.ReLU()

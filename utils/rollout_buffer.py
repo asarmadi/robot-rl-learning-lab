@@ -1,21 +1,24 @@
 import torch
 
 class RolloutBuffer():
-    def __init__(self, state_dim, size, gamma, lambda_):
+    def __init__(self, state_dim, size, gamma, lambda_, batch_size):
         self.size      = size
         self.state_dim = state_dim
         self.gamma     = gamma
         self.lambda_   = lambda_
+        self.batch_size= batch_size 
         self.reset()
 
-    def getitem(self, batch_size):
+    def getitem(self, idx):
         # Return one sample
-        indices = torch.randint(0, self.size, (batch_size,))
-        return self.state[indices], self.advantages[indices], self.log_prob[indices], self.action[indices], self.values[indices]
+        start = idx*self.batch_size
+        end   = (idx+1)*self.batch_size
+        mini_batch = self.indices[start:end]
+        return self.state[mini_batch], self.advantages[mini_batch], self.log_prob[mini_batch], self.action[mini_batch], self.values[mini_batch]
 
     def additem(self, state, next_state, reward, action, log_prob, terminate):
-        self.state[self.idx]        = state.squeeze(-1)
-        self.next_state[self.idx]   = next_state.squeeze(-1)
+        self.state[self.idx]        = state
+        self.next_state[self.idx]   = next_state
         self.reward[self.idx]       = reward
         self.action[self.idx]       = action
         self.log_prob[self.idx]     = log_prob
@@ -25,7 +28,7 @@ class RolloutBuffer():
     def cal_advantages(self, V_phi):
         self.advantages = torch.zeros((self.size, 1))
         self.values = torch.zeros((self.size, 1))
-
+        
         # We already defined the A[t+1] = 0
         for t in range(self.size-1,-1,-1):
             self.values[t] = V_phi(self.state[t]).detach()
@@ -39,13 +42,17 @@ class RolloutBuffer():
                     self.advantages[t] = delta_t + self.gamma * self.lambda_ *  self.advantages[t+1]
 
         # We normalize the advantage to get a less noisier training loss
-        mean = self.advantages.mean(dim=0)
-        std  = self.advantages.std(dim=0, unbiased=False)
+        self.mean = self.advantages.mean(dim=0)
+        self.std  = self.advantages.std(dim=0, unbiased=False)
         
-        self.advantages = (self.advantages - mean) / (std + 1e-8)
+    def normalize(self, input_):
+        return (input_ - self.mean) / (self.std + 1e-8)
 
     def __len__(self):
         return self.idx
+
+    def shuffle(self):
+        self.indices =  torch.randint(0, self.size, (self.size,))
 
     def reset(self):
         self.state         = torch.zeros((self.size, self.state_dim))

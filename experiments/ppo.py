@@ -7,26 +7,29 @@ from utils.rollout_buffer import RolloutBuffer
 
 # General hyper-parameters
 method      = 'PPO'
-action_type = 'discrete'
+action_type = 'continuous'
 seed        = 42
 n_episodes  = 10000
 rollout_buffer_size  = 128  # This is different from the n-step, this is the size of the rollout buffer for training
-gamma       = 0.99 # Discount factor
+gamma       = 0.995 # Discount factor
 lambda_     = 0.95  # GAE weighting coefficient
 
 # Agent hyper-parameters
 n_layers   = 2
 hidden_dim = 128
-action_dim = 2
-max_action = 2
+if action_type == 'discrete':
+    action_dim = 2
+else:
+    action_dim = 1
+max_action = 5
 
 # Training hyper-parameters
 config = {
-'lr' : 0.001,
+'lr' : 0.0001,
 'batch_size' : 32,
-'n_epochs' : 20,
+'n_epochs' : 5,
 'epsilon'  : 0.2, # This is the clipping threshold for the actor loss
-'c_ent'    : 0.0001 # Entropy loss coefficient
+'c_ent'    : 0.001 # Entropy loss coefficient
 }
 
 torch.manual_seed(seed)
@@ -42,7 +45,7 @@ else:
 V_phi = MLP_V(input_dim=env.state_dim, n_layers=n_layers, hidden_dim=hidden_dim, output_dim=1)
 
 training       = Training(policy=agent, state_value=V_phi, config=config)
-rollout_buffer = RolloutBuffer(state_dim=env.state_dim, size=rollout_buffer_size, gamma=gamma, lambda_=lambda_)
+rollout_buffer = RolloutBuffer(state_dim=env.state_dim, size=rollout_buffer_size, gamma=gamma, lambda_=lambda_, batch_size=config['batch_size'])
 
 rewards = []
 for episode in range(n_episodes):
@@ -54,31 +57,11 @@ for episode in range(n_episodes):
     sum_rewards = 0
 
     while True:
-        if agent.type == 'discrete':
-            logits = agent.predict(state.squeeze(-1))
-            distribution = torch.distributions.Categorical(logits=logits)
-            action = distribution.sample()
-            log_prob = distribution.log_prob(action)
-            action_env = agent.actions[action]
-        else:
-            action_mean, action_std = agent.predict(state.squeeze(-1))
-            std = torch.exp(action_std) # To make sure the std is always positive
-            distribution = torch.distributions.Normal(action_mean, std)
-            action = distribution.sample()
+        action, action_env, log_prob, entropy_l = agent.get_action(state)
 
-            # Based on the mean and std, the action could be out of the desired range, we need to correct that
-            squashed_action = torch.tanh(action)       
-            action_env = action_max * squashed_action          
-
-            log_prob = distribution.log_prob(raw_action)
-
-            log_prob -= torch.log(1.0 - squashed_action.pow(2) + 1e-6)
-
-            log_prob -= torch.log(torch.as_tensor(action_max, device=raw_action.device))
-
-        entropy_loss.append(distribution.entropy())
+        entropy_loss.append(entropy_l)
         next_state, reward, terminate = env.step(state, action_env, step)
-        rollout_buffer.additem(state.squeeze(-1),next_state, reward, action, log_prob, terminate)
+        rollout_buffer.additem(state,next_state, reward, action, log_prob, terminate)
 
         if len(rollout_buffer) == rollout_buffer_size:
             rollout_buffer.cal_advantages(V_phi)

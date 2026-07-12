@@ -128,9 +128,15 @@ class CartPole(Environment):
         step = 0
 
         while True:
-            logits = policy.predict(state.squeeze(-1)).detach()
-            action = logits.argmax()
-            next_state, reward, terminate = self.step(state, policy.actions[action], step)
+            if policy.type == 'discrete':
+                logits = policy.predict(state.squeeze(-1)).detach()
+                action = logits.argmax()
+                action_env = policy.actions[action]
+            else:
+                mu, _ = policy.predict(state.squeeze(-1)).detach()
+                squashed_action = torch.tanh(mu)       
+                action_env = policy.action_max * squashed_action 
+            next_state, reward, terminate = self.step(state, action_env, step)
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(policy.actions[action])
 

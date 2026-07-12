@@ -23,17 +23,20 @@ class RolloutBuffer():
         self.idx += 1
 
     def cal_advantages(self, V_phi):
-        self.advantages = torch.zeros((self.size+1, 1))
-        self.values = torch.zeros((self.size+1, 1))
+        self.advantages = torch.zeros((self.size, 1))
+        self.values = torch.zeros((self.size, 1))
 
         # We already defined the A[t+1] = 0
         for t in range(self.size-1,-1,-1):
             self.values[t] = V_phi(self.state[t]).detach()
             if self.terminate[t] == 'terminal':
-                delta_t = self.reward[t] - self.values[t]
+                self.advantages[t] = self.reward[t] - self.values[t]
             else:
                 delta_t = self.reward[t] + self.gamma * V_phi(self.next_state[t]).detach() - self.values[t]
-            self.advantages[t] = delta_t + self.gamma * self.lambda_ *  self.advantages[t+1]
+                if t == (self.size-1):
+                    self.advantages[t] = delta_t
+                else:
+                    self.advantages[t] = delta_t + self.gamma * self.lambda_ *  self.advantages[t+1]
 
         # We normalize the advantage to get a less noisier training loss
         mean = self.advantages.mean(dim=0)

@@ -18,6 +18,8 @@ class MLP(nn.Module):
         self.actions = torch.linspace(-max_action, max_action, output_dim)
 
         self.init_weights()
+        self.type = 'discrete'
+
 
     def init_weights(self):
         # Normal hidden-layer initialization

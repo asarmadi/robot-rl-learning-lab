@@ -16,6 +16,8 @@ class MLPC(nn.Module):
         self.layers.append(nn.Linear(hidden_dim, output_dim*2)) # For each output, we calculate mean and std
 
         self.init_weights()
+        self.type = 'continuous'
+        self.max_action=max_action
 
     def init_weights(self):
         # Normal hidden-layer initialization

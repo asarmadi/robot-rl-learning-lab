@@ -52,14 +52,12 @@ for episode in range(n_episodes):
     env.reset()
     state = env.current_state
     print(f'Episode: {episode}')
-    entropy_loss = []
     step = 0
     sum_rewards = 0
 
     while True:
-        action, action_env, log_prob, entropy_l = agent.get_action(state)
+        action, action_env, log_prob = agent.get_action(state)
 
-        entropy_loss.append(entropy_l)
         next_state, reward, terminate = env.step(state, action_env, step)
         rollout_buffer.additem(state,next_state, reward, action, log_prob, terminate)
 
@@ -67,7 +65,6 @@ for episode in range(n_episodes):
             rollout_buffer.cal_advantages(V_phi)
             training.train(rollout_buffer)
             rollout_buffer.reset()
-            entropy_loss = []
 
         if terminate == 'terminal' or terminate == 'truncate':
             break

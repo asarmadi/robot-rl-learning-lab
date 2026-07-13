@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from envs.cart_pole import CartPole
-from agents.mlp import MLP
 from estimators.mlp import MLP as MLP_V
 
 # General hyper-parameters
@@ -12,6 +11,7 @@ device     = 'cpu'
 seed       = 42
 
 # Policy hyper-parameters
+action_type = 'continuous'
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
@@ -23,7 +23,13 @@ torch.manual_seed(seed)
 
 
 env = CartPole(method='A2C_one_step')
-agent = MLP(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=action_dim, max_action=max_action)
+if action_type == 'discrete':
+    from agents.mlp import MLP
+    agent = MLP(input_dim=env.state_dim, output_dim=action_dim, n_layers=n_layers, hidden_dim=hidden_dim, max_action=max_action)
+else:
+    from agents.mlp_continuous import MLPC
+    agent = MLPC(input_dim=env.state_dim, output_dim=action_dim, n_layers=n_layers, hidden_dim=hidden_dim, max_action=max_action)
+
 V_phi = MLP_V(input_dim=env.state_dim,n_layers=n_layers, hidden_dim=hidden_dim, output_dim=1)
 
 actor_optimizer = optim.Adam(agent.parameters(), lr=actor_lr)
@@ -40,11 +46,9 @@ for episode in range(1,n_episodes):
     sum_rewards = 0
 
     while True:
-        logits = agent(state.squeeze(-1))
-        distribution = torch.distributions.Categorical(logits=logits)
-        action = distribution.sample()
-        log_prob = distribution.log_prob(action)
-        next_state, reward, terminate = env.step(state, agent.actions[action], step)
+        action, action_env, log_prob, _ = agent.get_action_g(state)
+
+        next_state, reward, terminate = env.step(state, action_env, step)
 
         # TD Error:
         V_s = V_phi(state.squeeze(-1))

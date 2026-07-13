@@ -59,3 +59,5 @@ The thrid important element is the entropy added to the action loss to encourage
 
 # Observations
 One of the issues that I was facing was getting NaN during training. I realized that adding advantage normalization for the rollout buffer solves the issue.
+
+One of the mistakes that I made was using the normalized advantage for training the state value (critic) function. The critic is going to give us the state value and we only normalize for training actor because the direction is important for us.

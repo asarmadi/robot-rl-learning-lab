@@ -23,27 +23,7 @@ class Training:
                 norm_adv = rollout_buffer.normalize(advantage)
 
                 self.actor_optimizer.zero_grad()
-                if self.policy.type == 'discrete':
-                    logits = self.policy(state)
-                    distribution = torch.distributions.Categorical(logits=logits)
-                    log_probs = distribution.log_prob(action).unsqueeze(-1)
-                else:
-                    output = self.policy(state)
-                    if state.ndim == 1:
-                        out_mean, out_std = output[0], output[1]
-                    else:
-                        out_mean, out_std = output[:,0:1], output[:,1:2]
-                    std = torch.exp(out_std)
-                    distribution = torch.distributions.Normal(out_mean, std)
-                    squashed_action = torch.tanh(action)       
-
-                    log_probs = distribution.log_prob(action)
-
-                    log_probs -= torch.log(1.0 - squashed_action.pow(2) + 1e-6)
-
-                    log_probs -= torch.log(torch.as_tensor(self.policy.max_action, device=action.device))
-
-                entropy_loss = distribution.entropy()
+                _, _, log_probs, entropy_loss = self.policy.get_action_g(state, action)
                 r_t = torch.exp(log_probs - prev_policy.detach())
                 actor_loss = -torch.min(r_t*norm_adv,(torch.clip(r_t, min=(1-self.config['epsilon']), max=(1+self.config['epsilon']))*norm_adv)).mean() - self.config['c_ent'] * entropy_loss.mean()
                 actor_loss.backward()

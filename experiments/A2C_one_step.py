@@ -6,7 +6,7 @@ from estimators.mlp import MLP as MLP_V
 
 # General hyper-parameters
 n_episodes = 10000
-gamma      = 0.99  # Discount factor
+gamma      = 0.995  # Discount factor
 device     = 'cpu'
 seed       = 42
 
@@ -15,9 +15,9 @@ action_type = 'continuous'
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.00001
-critic_lr = 0.00001
-max_action = 2
+actor_lr   = 0.0001
+critic_lr = 0.0001
+max_action = 5
 
 torch.manual_seed(seed)
 
@@ -46,7 +46,7 @@ for episode in range(1,n_episodes):
     sum_rewards = 0
 
     while True:
-        action, action_env, log_prob, _ = agent.get_action_g(state)
+        _, action_env, log_prob, _ = agent.get_action_g(state)
 
         next_state, reward, terminate = env.step(state, action_env, step)
 
@@ -54,7 +54,7 @@ for episode in range(1,n_episodes):
         V_s = V_phi(state.squeeze(-1))
         if terminate == 'terminal':
             delta_t = reward - V_s.detach()
-            target  = reward
+            target  = reward.unsqueeze(-1)
         else:
             V_s_1 = V_phi(next_state.squeeze(-1)).detach()
             delta_t = reward + gamma * V_s_1 - V_s

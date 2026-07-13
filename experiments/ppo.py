@@ -29,7 +29,7 @@ config = {
 'batch_size' : 32,
 'n_epochs' : 5,
 'epsilon'  : 0.2, # This is the clipping threshold for the actor loss
-'c_ent'    : 0.001 # Entropy loss coefficient
+'c_ent'    : 0.0001 # Entropy loss coefficient
 }
 
 torch.manual_seed(seed)

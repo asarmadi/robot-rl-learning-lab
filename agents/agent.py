@@ -48,20 +48,27 @@ class Agent:
         if self.type == 'discrete':
             logits = self.forward(state)
             distribution = torch.distributions.Categorical(logits=logits)
+            # This is for the case where we are doing a rollout
             if action == None:
                 action       = distribution.sample()
                 log_probs     = distribution.log_prob(action)
                 action_env   = self.actions[action]
             else:
+                # This is for the case where we want to use the sample to train, therefore, we use the action collected during rollout
                 log_probs = distribution.log_prob(action).unsqueeze(-1)
 
         else:
             output = self.forward(state)
             if state.ndim == 1:
+                # During the rollout we only pass one state at a time
                 out_mean, out_std = output[0], output[1]
             else:
+                # Druing training we pass a batch of samples
                 out_mean, out_std = output[:,0:1], output[:,1:2]
+
+            out_std = torch.clamp(out_std, -self.min_log_std, self.max_log_std)
             std = torch.exp(out_std)
+
             distribution = torch.distributions.Normal(out_mean, std)
             if action == None:
                 action       = distribution.sample()

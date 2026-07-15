@@ -18,9 +18,9 @@ action_type = 'continuous'
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.001
-critic_lr = 0.001
-max_action = 2
+actor_lr   = 0.0001
+critic_lr = 0.0001
+max_action = 5
 torch.manual_seed(seed)
 
 env = CartPole(method='A2C_n_step')
@@ -110,6 +110,7 @@ for episode in range(1,n_episodes):
         buffer_idx += 1
         sum_rewards += reward
     episode_rewards.append(sum_rewards)
+    print(f'Steps: {step}, Reward: {sum_rewards}')
 
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

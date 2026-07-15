@@ -6,7 +6,7 @@ from estimators.mlp import MLP as MLP_V
 
 # General hyper-parameters
 n_episodes = 10000
-gamma      = 0.995  # Discount factor
+gamma      = 0.99  # Discount factor
 device     = 'cpu'
 seed       = 42
 
@@ -15,8 +15,8 @@ action_type = 'continuous'
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.0001
-critic_lr = 0.0001
+actor_lr   = 0.0003
+critic_lr = 0.0003
 max_action = 5
 
 torch.manual_seed(seed)
@@ -78,7 +78,7 @@ for episode in range(1,n_episodes):
         state = next_state
         step += 1
         sum_rewards += reward
-    print(f'Steps: {step}')
+    print(f'Steps: {step}, Reward: {sum_rewards}')
     rewards.append(sum_rewards)
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

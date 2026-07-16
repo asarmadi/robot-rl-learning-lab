@@ -1,0 +1,2 @@
+# Deep Deterministic Policy Gradient (DDPG)
+DDPG is similar to DQN with two main differences. First, instead of an epsilon greedy policy, it uses a deep network to estimate the action. Second, the action is continuous. In DQN, the output size of the Q network was the number of action bins. However, in DDPG, the action is an input to the network. DDPG is similar to REINFORCE, A2C, and PPO in a sense that it has a deep network for its policy. The main difference is that it does not generate a probability distribution for the action. DDPG outputs the action directly. 

@@ -8,10 +8,10 @@ from estimators.mlp import MLP as MLP_V
 
 # General hyper-parameters
 n_episodes = 10000
-gamma      = 0.99  # Discount factor
+gamma      = 0.995  # Discount factor
 device     = 'cpu'
 step_size  = 20  # This is the n value for the future n steps of the algorithm
-c_ent      = 0.01 # This is the entropy coefficient 
+c_ent      = 0.0001 # This is the entropy coefficient 
 seed       = 42
 # Policy hyper-parameters
 action_type = 'continuous'
@@ -42,7 +42,7 @@ episode_rewards = []
 for episode in range(1,n_episodes):
     env.reset()
     state = env.current_state
-    print(f'Episode: {episode}')
+    
     states      = torch.zeros((step_size, env.state_dim))
     actions     = torch.zeros((step_size, 1))
     rewards     = torch.zeros((step_size, 1))
@@ -110,7 +110,7 @@ for episode in range(1,n_episodes):
         buffer_idx += 1
         sum_rewards += reward
     episode_rewards.append(sum_rewards)
-    print(f'Steps: {step}, Reward: {sum_rewards}')
+    print(f'Episode: {episode}, Steps: {step}, Reward: {sum_rewards}')
 
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

@@ -51,7 +51,7 @@ rewards = []
 for episode in range(n_episodes):
     env.reset()
     state = env.current_state
-    print(f'Episode: {episode}')
+    
     step = 0
     sum_rewards = 0
 
@@ -73,7 +73,7 @@ for episode in range(n_episodes):
         step += 1
         sum_rewards += reward
     rewards.append(sum_rewards)
-    print(f'Steps: {step}, Reward= {sum_rewards}')
+    print(f'Episode: {episode}, Steps: {step}, Reward: {sum_rewards}')
 
     # plotting the result every 1000 episodes
     if episode % 200 == 0:

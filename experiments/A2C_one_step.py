@@ -15,8 +15,8 @@ action_type = 'continuous'
 n_layers   = 2
 hidden_dim = 128
 action_dim = 2
-actor_lr   = 0.0003
-critic_lr = 0.0003
+actor_lr   = 0.00001
+critic_lr = 0.00001
 max_action = 5
 
 torch.manual_seed(seed)

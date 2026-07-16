@@ -15,13 +15,14 @@ class Agent:
 
     
     def get_action(self, state):
+        log_prob = None # By default, it is none
         if self.type == 'discrete':
             logits       = self.predict(state)
             distribution = torch.distributions.Categorical(logits=logits)
             action       = distribution.sample()
             log_prob     = distribution.log_prob(action)
             action_env   = self.actions[action]
-        else:
+        elif self.type == 'continuous':
             output = self.predict(state)
             if state.ndim == 1:
                 out_mean, out_std = output[0], output[1]
@@ -41,10 +42,18 @@ class Agent:
 
             log_prob -= torch.log(torch.as_tensor(self.max_action, device=action.device))
 
+        elif self.type == 'directContinuous':
+            output = self.predict(state)
+            squashed_action = torch.tanh(output)
+            action = self.max_action * squashed_action
+            action_env = action # Since the action is exactly the output of the network
+
         return action, action_env, log_prob
 
     def get_action_g(self, state, action=None):
         action_env = None
+        log_probs = None
+        dist_entropy = None
         if self.type == 'discrete':
             logits = self.forward(state)
             distribution = torch.distributions.Categorical(logits=logits)
@@ -57,7 +66,9 @@ class Agent:
                 # This is for the case where we want to use the sample to train, therefore, we use the action collected during rollout
                 log_probs = distribution.log_prob(action).unsqueeze(-1)
 
-        else:
+            dist_entropy = distribution.entropy()
+
+        elif self.type == 'continuous':
             output = self.forward(state)
             if state.ndim == 1:
                 # During the rollout we only pass one state at a time
@@ -84,6 +95,12 @@ class Agent:
 
             log_probs -= torch.log(torch.as_tensor(self.max_action, device=action.device))
 
+            dist_entropy = distribution.entropy()
+        elif self.type == 'directContinuous':
+            output = self.forward(state)
+            squashed_action = torch.tanh(output)
+            action = self.max_action * squashed_action
+            action_env = action
               
-        return action, action_env, log_probs, distribution.entropy()
+        return action, action_env, log_probs, dist_entropy
         

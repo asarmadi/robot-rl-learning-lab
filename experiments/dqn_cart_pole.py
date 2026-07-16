@@ -60,7 +60,7 @@ for episode in range(n_episodes):
         next_state, reward, reached_goal = env.step(state, agent.actions[action])
         replay_buffer.additem(state,next_state,reward,action)
 
-        if reached_goal:
+        if terminate == 'terminal' or terminate == 'truncate':
             break
 
         step += 1

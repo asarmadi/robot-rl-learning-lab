@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 class Agent:
-    def __init__(self, action_dim, seed, type_, **kwargs):
+    def __init__(self, action_dim, seed, type_=None, **kwargs):
         self.action_dim = action_dim
         self.type = type_
         np.random.seed(seed)

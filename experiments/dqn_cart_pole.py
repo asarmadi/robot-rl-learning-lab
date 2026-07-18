@@ -9,6 +9,7 @@ seed              = 0
 torch.manual_seed(seed)
 
 # DQN Hyper-Parameters
+action_type        = 'epsilonGreedy'
 n_episodes         = 3000
 epsilon            = 1.0  # Probability for taking random actions
 action_dim         = 10   # Number of bins for the action space
@@ -31,7 +32,7 @@ device            = 'cpu'
 
 
 env      = CartPole(method='DQN_upright')
-agent    = epsilonGreedy(epsilon_max=epsilon, action_dim=action_dim, seed=seed, environment='CartPole')
+agent    = epsilonGreedy(epsilon_max=epsilon, action_dim=action_dim, seed=seed, type_=action_type, environment='CartPole')
 Q_online = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=agent.action_dim)
 Q_target = MLP(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=agent.action_dim)
 
@@ -44,51 +45,40 @@ training = Training(batch_size=batch_size,
 
 replay_buffer = ReplayBuffer(size=replay_buffer_size,state_dim=env.state_dim)
 
-step = 1
+total_steps = 1
+rewards = []
 
 for episode in range(n_episodes):
-    print(f'Episode: {episode}, Epsilon: {agent.epsilon}')
     env.reset()
     state = env.current_state
+    sum_rewards = 0
+    step  = 0
 
     # Added this to start with high exploration and then move towards exploitation
-    agent.set_epsilon(step)
+    agent.set_epsilon(total_steps)
 
     while True:
-        state = torch.as_tensor(state,dtype=torch.float32,device=device)
-        action = agent.act(Q_online.predict(state.squeeze(-1)).detach().numpy())
-        next_state, reward, reached_goal = env.step(state, agent.actions[action])
+        action = agent.act(Q_online.predict(state).detach().numpy())
+        next_state, reward, terminate = env.step(state, agent.actions[action], step_counter=step)
         replay_buffer.additem(state,next_state,reward,action)
 
         if terminate == 'terminal' or terminate == 'truncate':
             break
 
         step += 1
+        total_steps += 1
+        sum_rewards += reward
         state = next_state
         
-        if (step > initial_data_size): # We update the online network after collecting inital number of samples
+        if (len(replay_buffer) > initial_data_size): # We update the online network after collecting inital number of samples
             training.train(replay_buffer, copy_network=(step % update_rate))
 
+    rewards.append(sum_rewards)
+    print(f'Episode: {episode}, Steps: {step}, Reward: {sum_rewards}')
 
-# Testing the optimal policy
-states_for_plotting  = []
-actions_for_plotting = []
-env.reset()
-state = env.current_state
-
-while True:
-    state = torch.as_tensor(state,dtype=torch.float32,device=device)
-    action = agent.act_greedy(Q_online.predict(state.squeeze(-1)).detach().numpy())
-    next_state, reward, reached_goal = env.step(state, agent.actions[action])
-    states_for_plotting.append(state.detach().numpy())
-    actions_for_plotting.append(agent.actions[action])
-
-    print(f'Reward: {reward}')
-    if reached_goal:
-        break
-
-    state = next_state
-
-env.plot_states(states_for_plotting, actions_for_plotting)
+    # plotting the result every 1000 episodes
+    if episode % 200 == 0:
+        env.test_policy(agent, episode//200, Q_network=Q_online)
+        env.plot_rewards(rewards)
 
     

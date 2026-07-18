@@ -40,3 +40,5 @@ $$
 Adding noise during rollout for data collection is crucial to help the exploration.
 
 Among the recent algorithms like DQN, PPO, and A2C, the DDPG is learning much sooner in terms of number of episodes. I believe the main reason is the replay buffer that has all the previous samples and keeps adding new ones. Also, soft updating helps to prevent moving target issue.
+
+The policy/actor achived a high reward even before the replay buffer is full. I'm using an initial samples size of 1000 to start training. Then I fill the buffer up to 10000 samples.

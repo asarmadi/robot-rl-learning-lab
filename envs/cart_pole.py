@@ -121,7 +121,7 @@ class CartPole(Environment):
         plt.close()
 
 
-    def test_policy(self, policy, episode):
+    def test_policy(self, policy, episode, Q_network=None):
         self.reset()
         state = self.current_state
         states_for_plotting = []
@@ -134,6 +134,9 @@ class CartPole(Environment):
                 logits = policy.predict(state).detach()
                 action = logits.argmax()
                 action_env = policy.actions[action]
+            elif policy.type == 'epsilonGreedy':
+                action = torch.argmax(Q_network(state).detach())
+                action_env = torch.tensor(policy.actions[action.item()])
             else:
                 output = policy.predict(state).detach()
                 squashed_action = torch.tanh(output[0])       

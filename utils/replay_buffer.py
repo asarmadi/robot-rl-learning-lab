@@ -10,15 +10,20 @@ class ReplayBuffer():
 
 
         self.idx = 0
-        self.running_idx = 0
+        self.buffer_full = False # It checks when the buffer has all the elements filled
         self.size = size
 
     def __len__(self):
-        return self.running_idx
+        if self.buffer_full:
+            return self.size
+        return self.idx
 
     def getitem(self, batch_size):
         # Return one sample
-        indices = torch.randint(0, self.running_idx, (batch_size,))
+        if self.buffer_full:
+            indices = torch.randint(0, self.size, (batch_size,))
+        else:
+            indices = torch.randint(0, self.idx, (batch_size,))
         return self.state[indices], self.next_state[indices], self.reward[indices], self.action[indices], self.terminal[indices]
 
     def additem(self, state, next_state, reward, action, d=0):
@@ -32,5 +37,4 @@ class ReplayBuffer():
         
         if self.idx >= self.size:
             self.idx = 0
-        else:
-            self.running_idx += 1
+            self.buffer_full = True # The first time the buffer is full, it will be true for the rest of the training

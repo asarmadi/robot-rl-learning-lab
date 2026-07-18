@@ -24,7 +24,7 @@ class Training:
         self.online_network.train()
         self.target_network.eval()
 
-        state, next_state, reward, action = replay_buffer.getitem(self.batch_size)
+        state, next_state, reward, action, terminal = replay_buffer.getitem(self.batch_size)
         
         optimizer.zero_grad()
         if self.method == 'DQN':
@@ -34,9 +34,11 @@ class Training:
            _, indices = torch.max(self.online_network.predict(next_state),dim=1)
            values = self.target_network.predict(next_state)[:,indices]
 
-        target = (reward.squeeze(-1) + values*self.gamma)
+        if terminal == 'terminal':
+            target = reward.squeeze(-1)
+        else:
+            target = (reward.squeeze(-1) + values*self.gamma)
 
-    
         output = self.online_network(state).gather(dim=1, index=action.long())
         loss = criterion(output.squeeze(-1), target)
 

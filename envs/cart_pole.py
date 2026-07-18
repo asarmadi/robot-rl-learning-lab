@@ -32,6 +32,10 @@ class CartPole(Environment):
 
 
     def reset(self):
+        # For algorithms like DQN and DDPG if we do not add noise in the beginning, it keeps collecting same states
+        #distribution = torch.distributions.Normal(torch.zeros(self.state_dim), 0.1)
+        #noise       = distribution.sample()
+        #self.current_state   = self.init_state + noise
         self.current_state   = self.init_state
         self.upright_counter = 0
 
@@ -70,8 +74,6 @@ class CartPole(Environment):
         pole,  = ax.plot([0, 0], [0, -self.l], "--", markersize=20)
         cart,  = ax.plot([0.05, 0.05, -0.05, -0.05, 0.05], [-0.05, 0.05, 0.05, -0.05, -0.05], "-", markersize=20)
 
-
-
         def update_frame(frame):
             x = states[frame][0].item()
             theta = states[frame][2].item()
@@ -83,7 +85,7 @@ class CartPole(Environment):
             fig,
             update_frame,
             frames=len(states),
-            interval=self.dt*1000,
+            interval=self.dt*1000, # Multiplied to 1000 to convert s to ms
             blit=True
         )
 

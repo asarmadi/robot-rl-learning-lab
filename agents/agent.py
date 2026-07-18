@@ -42,11 +42,13 @@ class Agent:
 
             log_prob -= torch.log(torch.as_tensor(self.max_action, device=action.device))
 
-        elif self.type == 'directContinuous':
+        elif self.type == 'deterministicContinuous':
             output = self.predict(state)
-            squashed_action = torch.tanh(output)
-            action = self.max_action * squashed_action
-            action_env = action # Since the action is exactly the output of the network
+            # To encourage exploration during the roll-out
+            distribution    = torch.distributions.Normal(0, 2)
+            noise           = distribution.sample()
+            action          = output + noise
+            action_env = action.item() # Since the action is exactly the output of the network
 
         return action, action_env, log_prob
 
@@ -96,11 +98,9 @@ class Agent:
             log_probs -= torch.log(torch.as_tensor(self.max_action, device=action.device))
 
             dist_entropy = distribution.entropy()
-        elif self.type == 'directContinuous':
+        elif self.type == 'deterministicContinuous':
             output = self.forward(state)
-            squashed_action = torch.tanh(output)
-            action = self.max_action * squashed_action
-            action_env = action
+            action_env      = action
               
         return action, action_env, log_probs, dist_entropy
         

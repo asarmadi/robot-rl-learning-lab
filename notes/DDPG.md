@@ -34,3 +34,9 @@ $$
 $$
 \Phi \leftarrow \tau \Phi + (1-\tau)\Phi
 $$
+
+
+# Observations
+Adding noise during rollout for data collection is crucial to help the exploration.
+
+Among the recent algorithms like DQN, PPO, and A2C, the DDPG is learning much sooner in terms of number of episodes. I believe the main reason is the replay buffer that has all the previous samples and keeps adding new ones. Also, soft updating helps to prevent moving target issue.

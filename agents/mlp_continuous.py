@@ -3,21 +3,26 @@ import torch.nn as nn
 from agents.agent import Agent
 
 class MLPC(nn.Module, Agent):
-    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, max_action=10, **kwargs):
+    def __init__(self, input_dim, hidden_dim, n_layers, output_dim, type_='continuous', max_action=10, **kwargs):
         super().__init__(**kwargs)
 
         self.layers     = nn.ModuleList()
         self.activation = nn.ReLU()
+        self.tanh       = nn.Tanh()
 
         self.layers.append(nn.Linear(input_dim, hidden_dim))
 
         for i in range(n_layers):
             self.layers.append(nn.Linear(hidden_dim, hidden_dim))
 
-        self.layers.append(nn.Linear(hidden_dim, output_dim*2)) # For each output, we calculate mean and std
+        if type_ == 'continuous':
+            self.layers.append(nn.Linear(hidden_dim, output_dim*2)) # For each output, we calculate mean and std
+        else:
+            self.layers.append(nn.Linear(hidden_dim, output_dim)) # For deterministic policy, we directly output the action
+
 
         self.init_weights()
-        self.type = 'continuous'
+        self.type = type_
         self.max_action = max_action
         self.min_log_std = -4
         self.max_log_std = torch.log(torch.tensor(0.3 * 2 * max_action)) # 10% of the action range
@@ -39,6 +44,10 @@ class MLPC(nn.Module, Agent):
             # Not applying the activation function to the last layer
             if i < len(self.layers) - 1:
                 x = self.activation(x)
+        
+        if self.type == 'deterministicContinuous':
+            x = self.tanh(x)
+            x = self.max_action * x
 
         return x
     

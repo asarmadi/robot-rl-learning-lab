@@ -20,6 +20,7 @@ class MLP(nn.Module, Agent):
 
         self.init_weights()
         self.type = type_
+        self.max_action = max_action
 
 
     def init_weights(self):
@@ -30,8 +31,8 @@ class MLP(nn.Module, Agent):
                 nn.init.zeros_(layer.bias)
 
         # Make initial logits exactly zero
-        nn.init.zeros_(self.layers[-1].weight)
-        nn.init.zeros_(self.layers[-1].bias)
+        #nn.init.zeros_(self.layers[-1].weight)
+        #nn.init.zeros_(self.layers[-1].bias)
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
@@ -39,7 +40,7 @@ class MLP(nn.Module, Agent):
             # Not applying the activation function to the last layer
             if i < len(self.layers) - 1:
                 x = self.activation(x)
-
+        
         return x
     
     def predict(self, x):

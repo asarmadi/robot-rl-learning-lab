@@ -5,3 +5,20 @@ One of the most important observations that I have is the effect of the reward o
 
 ![Training curve](figs/cartPole_A2C_one_step_animation.gif)
 
+I changed the reward to $r = \cos{\theta} + 0.1x^2 + 0.001 \dot{x}^2 + 0.001 \omega^2 + 0.0001 u^2$, also I changed the policy to a continuous policy that outputs the probability districution of the action. The following figures show the results
+
+![Training curve](figs/cartPole_A2C_one_step_rewards_continuous.png)
+
+![Training curve](figs/cartPole_A2C_one_step_animation_continuous.gif)
+
+I got the best results by DDPG:
+
+![Training curve](figs/cartPole_DDPG_rewards.png)
+
+![Training curve](figs/cartPole_DDPG_animation.gif)
+
+PPO results are shown below:
+
+![Training curve](figs/cartPole_PPO_rewards.png)
+
+![Training curve](figs/cartPole_PPO_animation.gif)

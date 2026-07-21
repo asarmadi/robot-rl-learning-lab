@@ -83,13 +83,13 @@ class Agent:
             std = torch.exp(out_std)
 
             distribution = torch.distributions.Normal(out_mean, std)
-            if action == None:
+            if action is None:
                 action       = distribution.rsample()
                 # Based on the mean and std, the action could be out of the desired range, we need to correct that
                 squashed_action = torch.tanh(action)       
                 action_env = self.max_action * squashed_action
-
-            squashed_action = torch.tanh(action)       
+            else:
+                squashed_action = torch.tanh(action)       
 
             log_probs = distribution.log_prob(action)
 

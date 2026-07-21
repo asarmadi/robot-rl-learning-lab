@@ -22,12 +22,12 @@ max_action  = 5
 
 # Training hyper_parameters
 config = {
-    'lr_actor': 0.0001,
+    'lr_actor': 0.001,
     'lr_critic': 0.001,
     'gamma': 0.99, # Discount factor
     'tau':   0.005, # Soft update constant
     'batch_size': 128,
-    'alpha': 0.001 # Exploration coefficient in entropy maximization
+    'alpha': 0.1 # Exploration coefficient in entropy maximization
 }
 
 env   = CartPole(method=method)

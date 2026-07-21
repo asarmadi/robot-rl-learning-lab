@@ -84,7 +84,7 @@ class Agent:
 
             distribution = torch.distributions.Normal(out_mean, std)
             if action == None:
-                action       = distribution.sample()
+                action       = distribution.rsample()
                 # Based on the mean and std, the action could be out of the desired range, we need to correct that
                 squashed_action = torch.tanh(action)       
                 action_env = self.max_action * squashed_action

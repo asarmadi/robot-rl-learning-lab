@@ -139,8 +139,8 @@ class CartPole(Environment):
                 action_env = torch.tensor(policy.actions[action.item()])
             else:
                 output = policy.predict(state).detach()
-                squashed_action = torch.tanh(output[0])       
-                action_env = policy.max_action * squashed_action 
+                #squashed_action = torch.tanh(output[0])       
+                action_env = policy.max_action * output[0] 
             next_state, reward, terminate = self.step(state, action_env, step)
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(action_env)

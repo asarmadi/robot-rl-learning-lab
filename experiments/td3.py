@@ -28,6 +28,8 @@ config = {
     'gamma': 0.99, # Discount factor
     'tau':   0.005, # Soft update constant
     'batch_size': 128,
+    'max_noise' : 0.2,  # For clipping the noise during training
+    'max_action' : max_action, # For clipping actions after adding noise
 }
 
 env   = CartPole(method=method)

@@ -41,7 +41,10 @@ class Training:
         output = self.actor_old.predict(next_state)
         distribution    = torch.distributions.Normal(torch.zeros_like(output), 2)
         noise           = distribution.sample()
+        noise           = noise.clamp(-self.config['max_noise'], self.config['max_noise'])
+
         action_pred     = output + noise
+        action_pred     = action_pred.clamp(-self.config['max_action'], self.config['max_action'])
 
         input_  = torch.hstack((next_state,action_pred))
         values1 = self.Q_old1.predict(input_)
@@ -71,7 +74,8 @@ class Training:
         if train_actor == 0:
             for parameter in self.Q_new1.parameters():
                 parameter.requires_grad_(False)
-                self.actor_optimizer.zero_grad()
+            
+            self.actor_optimizer.zero_grad()
 
             action_i = self.actor_new(state)
             input_i  = torch.hstack((state,action_i))
@@ -83,7 +87,6 @@ class Training:
             # To make sure, Q_new is available for updates in the next batch
             for parameter in self.Q_new1.parameters():
                 parameter.requires_grad_(True)
-                self.actor_optimizer.zero_grad()
 
             # Soft update
             ## Action Value Update
@@ -95,7 +98,7 @@ class Training:
             with torch.no_grad():
                 for new_param, old_param in zip(self.Q_new2.parameters(),self.Q_old2.parameters()):
                     old_param.mul_(1.0 - self.config['tau'])
-                old_param.add_(self.config['tau'] * new_param)
+                    old_param.add_(self.config['tau'] * new_param)
 
             ## Policy Update
             with torch.no_grad():

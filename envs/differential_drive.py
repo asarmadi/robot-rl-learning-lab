@@ -9,52 +9,52 @@ from matplotlib.animation import FuncAnimation
 class CartPole(Environment):
     def __init__(self, method):
         super().__init__()
-        self.state_dim  = 4
+        self.state_dim  = 3 # x, y, theta
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
         self.init_state     = torch.zeros(self.state_dim)
-        self.init_state[2]  = torch.pi - torch.pi/18
-        self.terminal_state = torch.zeros(self.state_dim)
+
+        self.terminal_state = torch.tensor([2,2,0])
         # Cart-pole hyper-parameters
-        self.M               = 1.0
-        self.m               = 0.1
-        self.l               = 0.5
-        self.g               = 9.8
-        self.dt              = 0.02 # 50 Hz
-        self.reach_threshold = 1*(torch.pi/180) # 2 Degree boundary
-        self.x_lim           = 3   # We are limiting the x to be between a thershold to prevent going to infinity
-        self.max_steps       = int(20/self.dt) # TO prevent the running loop stays forever. We want the whole episode lasts for 60 seconds
+        self.r    = 
+        self.L    =
+        self.max_steps = 1000 # To terminate the rollout if it takes more than this number of steps
+        self.x_lim  = 3 # The environment maximum x limit
+        self.y_lim  = 3 # The environment maximum y limit
 
-
-        self.save_dir        = f'./logs/cartPole_{method}'
+        self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(self.save_dir+'/animation', exist_ok=True)
 
 
     def reset(self):
         self.current_state   = self.init_state
-        self.upright_counter = 0
 
     def step(self, state, action, step_counter):
         state_d = torch.zeros(self.state_dim)
-        theta = state[2]
-        q     = (action + self.m*self.l*torch.sin(theta)*state[3]**2)/(self.M + self.m)
-        theta_dd = (self.g*torch.sin(theta)-q*torch.cos(theta))/(self.l*(4/3-((self.m*torch.cos(theta)**2)/(self.m+self.M))))
-        state_d[0] = state[1]
-        state_d[1] = q - (self.m*self.l*torch.cos(theta)*theta_dd)/(self.m+self.M)
-        state_d[2] = state[3]
-        state_d[3] = theta_dd
-        next_state = state + self.dt * state_d
+        # action[0] is the right wheel angular speed
+        # action[1] is the left wheel angular speed
+        delta_s_r   = self.r * action[0] * self.dt
+        delta_s_l   = self.r * action[1] * self.dt
+        delta_s     = (delta_s_r+delta_s_l)/2
+        theta       = state[0]
+        delta_theta = (delta_s_r-delta_s_l)/self.L
 
-        reward = torch.cos(next_state[2])  # It is one when upright and -1 when it is downward
-        reward -= (0.1*next_state[0]**2)   # To encourage staying at the x=0
-        reward -= (0.001*next_state[1]**2)  # To encourage not moving
-        reward -= (0.001*next_state[3]**2)  # To encourage not rotating 
-        reward -= (0.0001*action**2)         # To encourage consuming less action 
+        state_d[0] = delta_s * torch.cos(theta+delta_theta/2)
+        state_d[1] = delta_s * torch.sin(theta+delta_theta/2)
+        state_d[2] = delta_theta
+
+        next_state = state + state_d
+
+        reward = torch.linalg.norm(next_state-self.terminal_state)  # The distance to terminal state
 
         terminate = 'running'
-        # For the cases that the agent goes to infinity on x
-        if next_state[0] > self.x_lim or next_state[0] < -self.x_lim:
+        # For the cases that the agent goes out of range on x
+        if next_state[0] > self.x_lim or next_state[0] < 0:
+            terminate = 'terminal'
+
+        # For the cases where the agent goes out of range on y
+        if next_state[1] > self.y_lim or next_state[1] < 0:
             terminate = 'terminal'
 
         if step_counter >= self.max_steps:
@@ -67,15 +67,20 @@ class CartPole(Environment):
         ax.set_xlim(-2, 2)
         ax.set_ylim(-2, 2)
 
-        pole,  = ax.plot([0, 0], [0, -self.l], "--", markersize=20)
-        cart,  = ax.plot([0.05, 0.05, -0.05, -0.05, 0.05], [-0.05, 0.05, 0.05, -0.05, -0.05], "-", markersize=20)
+        x, y, theta = self.init_state[0], self.init_state[1], self.init_state[2]
+
+        axis_,   = ax.plot([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)], "--", markersize=20)
+        wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "-", markersize=20)
+        wheel_l, = ax.plot([x-self.L*np.sin(theta)+self.r*np.cos(theta), x-self.L*np.sin(theta)-self.r*np.cos(theta)], [y+self.L*np.cos(theta)+self.r*np.sin(theta), y+self.L*np.cos(theta)-+self.r*np.sin(theta)], "-", markersize=20)
 
         def update_frame(frame):
-            x = states[frame][0].item()
+            x     = states[frame][0].item()
+            y     = states[frame][1].item()
             theta = states[frame][2].item()
-            pole.set_data([x, x+self.l*np.sin(theta)], [0, self.l*np.cos(theta)])
-            cart.set_data([x+0.05, x+0.05, x-0.05, x-0.05, x+0.05],[-0.05, 0.05, 0.05, -0.05, -0.05])
-            return pole,cart
+            axis_.set_data([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)])
+            wheel_r.set_data([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)])
+            wheel_l.set_data([x-self.L*np.sin(theta)+self.r*np.cos(theta), x-self.L*np.sin(theta)-self.r*np.cos(theta)], [y+self.L*np.cos(theta)+self.r*np.sin(theta), y+self.L*np.cos(theta)-+self.r*np.sin(theta)])
+            return axis_, wheel_r, wheel_l
 
         ani = FuncAnimation(
             fig,
@@ -85,20 +90,23 @@ class CartPole(Environment):
             blit=True
         )
 
-        ani.save(f'{self.save_dir}/animation/cartPole{name_str}.gif', writer="pillow", fps=int(1 / self.dt))
+        ani.save(f'{self.save_dir}/animation/differentialDrive{name_str}.gif', writer="pillow", fps=int(1 / self.dt))
         plt.close(fig)
         plt.close()
 
         fig, axes = plt.subplots(5, 1)
 
-        state_names = [r'$x$', r'$\dot{x}$', r'$\theta$', r'$\dot{\theta}$']
+        state_names = [r'$x$', r'$y$', r'$\theta$']
 
         for i in range(self.state_dim):
             axes[i].plot(np.array(states)[:,i], label=state_names[i])
             axes[i].legend()
 
-        axes[self.state_dim].plot(np.array(actions), label='F')
-        axes[self.state_dim].legend()
+        action_names = [r'$\omega_R$', r'$\omega_L$']
+
+        for i in range(2):
+            axes[self.state_dim+i].plot(np.array(actions)[:,i], label=action_names[i])
+            axes[self.state_dim+i].legend()
 
         plt.savefig(f'{self.save_dir}/states.png')
         plt.close(fig)

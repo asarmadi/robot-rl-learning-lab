@@ -24,3 +24,6 @@ $$
 The rest of the algorithm is very similar to the TD3 where it is using two critics to reduce the overstimation bias. Also, it uses the soft update idea to slowly update the target networks from the online ones. However, SAC does not consider two networks for the actor. It has only one probabilistic actor that is used to during the target value calculations for the critics.
 
 The other difference wrt TD3 is the actor update objective. In TD3, we only use the online actor to estimate the action for maximazing the action value function. However, for the SAC, we consider the minimum between the two online networks and we also add the entropy maximization term.
+
+# Observations
+I realized this issue in SAC, TD3, and DDPG that the action value network (i.e., Q) takes a concatenation of states and action as the input. These may have a very different range. A method similar to PPO advantage noramlization may help.

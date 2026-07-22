@@ -75,8 +75,8 @@ class Training:
 
         _, action_i, log_probs, _ = self.actor.get_action_g(state)
         input_i    = torch.hstack((state,action_i))
-        values11   = self.Q_new1.predict(input_i)
-        values12   = self.Q_new2.predict(input_i)
+        values11   = self.Q_new1(input_i)
+        values12   = self.Q_new2(input_i)
         values1    = torch.min(values11, values12)
         loss_actor = self.config['alpha']*log_probs.mean() - values1.mean()
 

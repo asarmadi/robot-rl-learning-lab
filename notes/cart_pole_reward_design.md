@@ -22,3 +22,9 @@ PPO results are shown below:
 ![Training curve](figs/cartPole_PPO_rewards.png)
 
 ![Training curve](figs/cartPole_PPO_animation.gif)
+
+SAC results are shown below:
+
+![Training curve](figs/cartPole_SAC_rewards.png)
+
+![Training curve](figs/cartPole_SAC_animation.gif)

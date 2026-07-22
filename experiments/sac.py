@@ -58,7 +58,7 @@ for episode in range(1, n_episodes):
         d = 0 # This is going to be used for calculating the target value
         if terminate == 'terminal':
             d = 1
-        replay_buffer.additem(state, next_state, reward, action, d=d)
+        replay_buffer.additem(state, next_state, reward, action_env, d=d)
 
         if len(replay_buffer) >= initial_n_samples:
             training.train(replay_buffer)

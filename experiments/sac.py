@@ -1,6 +1,5 @@
 import torch
 from agents.mlp_continuous import MLPC
-from envs.cart_pole import CartPole
 from utils.replay_buffer import ReplayBuffer
 from estimators.mlp import MLP as MLPQ
 from utils.sac_training import Training
@@ -8,6 +7,7 @@ from utils.sac_training import Training
 # General hyper-parameters
 seed        = 42
 method      = 'SAC'
+environment = 'DifferentialDrive'
 buffer_size = 100000
 n_episodes  = 10000
 initial_n_samples = 2000 # This is the number of samples we collect before we start training
@@ -17,21 +17,29 @@ torch.manual_seed(seed)
 action_type = 'continuous' # This will output the action directly, instead of a probability distribution
 hidden_dim  = 128
 n_layers    = 2
-output_dim  = 1
-max_action  = 5
 
 # Training hyper_parameters
 config = {
-    'lr_actor': 0.001,
-    'lr_critic': 0.001,
-    'gamma': 0.99, # Discount factor
-    'tau':   0.005, # Soft update constant
+    'lr_actor':   0.001,
+    'lr_critic':  0.001,
+    'gamma':      0.99, # Discount factor
+    'tau':        0.005, # Soft update constant
     'batch_size': 128,
-    'alpha': 0.1 # Exploration coefficient in entropy maximization
+    'alpha':      0.1 # Exploration coefficient in entropy maximization
 }
 
-env   = CartPole(method=method)
-agent = MLPC(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=output_dim, type_=action_type, max_action=max_action)
+if environment == 'CartPole':
+    from envs.cart_pole import CartPole
+    env   = CartPole(method=method)
+    output_dim  = 1
+    max_action  = 5
+elif environment == 'DifferentialDrive':
+    from envs.differential_drive import DifferentialDrive
+    env   = DifferentialDrive(method=method)
+    output_dim = 2
+    max_action  = 5
+
+agent      = MLPC(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=output_dim, type_=action_type, max_action=max_action)
 
 Q_new1     = MLPQ(input_dim=env.state_dim+output_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=1)
 Q_new2     = MLPQ(input_dim=env.state_dim+output_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=1)
@@ -40,7 +48,7 @@ Q_old1     = MLPQ(input_dim=env.state_dim+output_dim, hidden_dim=hidden_dim, n_l
 Q_old2     = MLPQ(input_dim=env.state_dim+output_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=1)
 
 
-replay_buffer = ReplayBuffer(size=buffer_size, state_dim=env.state_dim)
+replay_buffer = ReplayBuffer(size=buffer_size, state_dim=env.state_dim, action_dim=output_dim)
 training      = Training(Q_old1=Q_old1, Q_old2=Q_old2, Q_new1=Q_new1, Q_new2=Q_new2, actor=agent, config=config)
 
 rewards     = []

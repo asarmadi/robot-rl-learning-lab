@@ -6,21 +6,22 @@ from envs.environment import Environment
 from matplotlib.animation import FuncAnimation
 
 
-class CartPole(Environment):
+class DifferentialDrive(Environment):
     def __init__(self, method):
         super().__init__()
         self.state_dim  = 3 # x, y, theta
 
         # We define the state as position, velocity, rotation, angular velocity x,x_d,\theta, \theta_d
-        self.init_state     = torch.zeros(self.state_dim)
+        self.init_state     = torch.tensor([1,1,0])
 
-        self.terminal_state = torch.tensor([2,2,0])
+        self.terminal_state = torch.tensor([5,5,0])
         # Cart-pole hyper-parameters
-        self.r    = 
-        self.L    =
+        self.r    = 0.05 # in meters
+        self.L    = 0.3 # in meters
+        self.dt   = 0.02  # This is 50 Hz
         self.max_steps = 1000 # To terminate the rollout if it takes more than this number of steps
-        self.x_lim  = 3 # The environment maximum x limit
-        self.y_lim  = 3 # The environment maximum y limit
+        self.x_lim  = 7 # The environment maximum x limit
+        self.y_lim  = 7 # The environment maximum y limit
 
         self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
@@ -46,7 +47,7 @@ class CartPole(Environment):
 
         next_state = state + state_d
 
-        reward = torch.linalg.norm(next_state-self.terminal_state)  # The distance to terminal state
+        reward = -torch.linalg.norm(next_state-self.terminal_state)  # The distance to terminal state
 
         terminate = 'running'
         # For the cases that the agent goes out of range on x
@@ -64,14 +65,14 @@ class CartPole(Environment):
     
     def plot_states(self, states, actions, name_str=''):
         fig, ax = plt.subplots()
-        ax.set_xlim(-2, 2)
-        ax.set_ylim(-2, 2)
+        ax.set_xlim(0, self.x_lim)
+        ax.set_ylim(0, self.y_lim)
 
         x, y, theta = self.init_state[0], self.init_state[1], self.init_state[2]
 
-        axis_,   = ax.plot([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)], "--", markersize=20)
-        wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "-", markersize=20)
-        wheel_l, = ax.plot([x-self.L*np.sin(theta)+self.r*np.cos(theta), x-self.L*np.sin(theta)-self.r*np.cos(theta)], [y+self.L*np.cos(theta)+self.r*np.sin(theta), y+self.L*np.cos(theta)-+self.r*np.sin(theta)], "-", markersize=20)
+        axis_,   = ax.plot([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)], "b--", markersize=20)
+        wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "b-", markersize=20)
+        wheel_l, = ax.plot([x-self.L*np.sin(theta)+self.r*np.cos(theta), x-self.L*np.sin(theta)-self.r*np.cos(theta)], [y+self.L*np.cos(theta)+self.r*np.sin(theta), y+self.L*np.cos(theta)-+self.r*np.sin(theta)], "b-", markersize=20)
 
         def update_frame(frame):
             x     = states[frame][0].item()
@@ -115,8 +116,6 @@ class CartPole(Environment):
     def plot_rewards(self, rewards):
         plt.figure()
 
-        state_names = [r'Reward']
-
         plt.plot(rewards)
 
         plt.title('Cumulative Reward')
@@ -144,7 +143,7 @@ class CartPole(Environment):
             else:
                 output = policy.predict(state).detach()
                 #squashed_action = torch.tanh(output[0])       
-                action_env = policy.max_action * output[0] 
+                action_env = policy.max_action * output[0:2] 
             next_state, reward, terminate = self.step(state, action_env, step)
             states_for_plotting.append(state.detach().numpy())
             actions_for_plotting.append(action_env)

@@ -1,11 +1,11 @@
 import torch
 
 class ReplayBuffer():
-    def __init__(self, state_dim, size):
+    def __init__(self, state_dim, action_dim, size):
         self.state       = torch.zeros((size, state_dim))
         self.next_state  = torch.zeros((size, state_dim))
         self.reward      = torch.zeros((size, 1))
-        self.action      = torch.zeros((size, 1))
+        self.action      = torch.zeros((size, action_dim))
         self.terminal    = torch.zeros((size, 1))
 
 

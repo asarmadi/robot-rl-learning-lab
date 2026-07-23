@@ -2,15 +2,14 @@ import torch
 import numpy as np
 
 class Agent:
-    def __init__(self, action_dim, seed, type_=None, **kwargs):
-        self.action_dim = action_dim
+    def __init__(self, seed, type_=None, **kwargs):
         self.type = type_
         np.random.seed(seed)
         super().__init__(**kwargs)
 
 
     def act(self, state):
-        action = np.random.randint(0, self.action_dim)
+        action = np.random.randint(0, self.output_dim)
         return self.actions[action]
 
     
@@ -25,10 +24,11 @@ class Agent:
         elif self.type == 'continuous':
             output = self.predict(state)
             if state.ndim == 1:
-                out_mean, out_std = output[0], output[1]
+                out_mean, out_std = output[0:self.output_dim-1], output[self.output_dim-1:-1]
             else:
-                out_mean, out_std = output[:,0:1], output[:,1:2]
+                out_mean, out_std = output[:,0:self.output_dim-1], output[:,self.output_dim-1:-1]
             std          = torch.exp(out_std) # To make sure the std is always positive
+
             distribution = torch.distributions.Normal(out_mean, std)
             action       = distribution.sample()
 
@@ -41,6 +41,8 @@ class Agent:
             log_prob -= torch.log(1.0 - squashed_action.pow(2) + 1e-6)
 
             log_prob -= torch.log(torch.as_tensor(self.max_action, device=action.device))
+
+            log_prob = log_prob.sum(dim=-1, keepdim=True) # For the case where the action dimension is more than 1, we sum over all the action values
 
         elif self.type == 'deterministicContinuous':
             output = self.predict(state)
@@ -74,15 +76,16 @@ class Agent:
             output = self.forward(state)
             if state.ndim == 1:
                 # During the rollout we only pass one state at a time
-                out_mean, out_std = output[0], output[1]
+                out_mean, out_std = output[0:self.output_dim-1], output[self.output_dim-1:-1]
             else:
                 # Druing training we pass a batch of samples
-                out_mean, out_std = output[:,0:1], output[:,1:2]
+                out_mean, out_std = output[:,0:self.output_dim-1], output[:,self.output_dim-1:-1]
 
             out_std = torch.clamp(out_std, self.min_log_std, self.max_log_std)
             std = torch.exp(out_std)
 
             distribution = torch.distributions.Normal(out_mean, std)
+            
             if action is None:
                 action       = distribution.rsample()
                 # Based on the mean and std, the action could be out of the desired range, we need to correct that
@@ -96,6 +99,8 @@ class Agent:
             log_probs -= torch.log(1.0 - squashed_action.pow(2) + 1e-6)
 
             log_probs -= torch.log(torch.as_tensor(self.max_action, device=action.device))
+
+            log_probs = log_probs.sum(dim=-1, keepdim=True) # For the case where the action dimension is more than 1, we sum over all the action values
 
             dist_entropy = distribution.entropy()
         elif self.type == 'deterministicContinuous':

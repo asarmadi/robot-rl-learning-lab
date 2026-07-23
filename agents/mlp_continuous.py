@@ -9,6 +9,7 @@ class MLPC(nn.Module, Agent):
         self.layers     = nn.ModuleList()
         self.activation = nn.ReLU()
         self.tanh       = nn.Tanh()
+        self.output_dim = output_dim
 
         self.layers.append(nn.Linear(input_dim, hidden_dim))
 

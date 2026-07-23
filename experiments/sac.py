@@ -37,7 +37,7 @@ elif environment == 'DifferentialDrive':
     from envs.differential_drive import DifferentialDrive
     env   = DifferentialDrive(method=method)
     output_dim = 2
-    max_action  = 5
+    max_action  = 10
 
 agent      = MLPC(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=output_dim, type_=action_type, max_action=max_action)
 
@@ -82,6 +82,6 @@ for episode in range(1, n_episodes):
     print(f'Episode: {episode}, Steps: {step}, Reward: {sum_rewards}')
 
     # plotting the result every 1000 episodes
-    if episode % 200 == 0:
-        env.test_policy(agent, episode//200)
+    if episode % 10 == 0:
+        env.test_policy(agent, episode//10)
         env.plot_rewards(rewards)

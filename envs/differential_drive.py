@@ -19,9 +19,11 @@ class DifferentialDrive(Environment):
         self.r    = 0.05 # in meters
         self.L    = 0.3 # in meters
         self.dt   = 0.02  # This is 50 Hz
-        self.max_steps = 1000 # To terminate the rollout if it takes more than this number of steps
+        self.max_steps = 2000 # To terminate the rollout if it takes more than this number of steps
         self.x_lim  = 7 # The environment maximum x limit
         self.y_lim  = 7 # The environment maximum y limit
+        self.obstacle_x_min, self.obstacle_x_max = 2, 4 # The boundary values for the obstacle on the x axis
+        self.obstacle_y_min, self.obstacle_y_max = 2, 4 # The boundary values for the obstacle on the y axis
 
         self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
@@ -38,7 +40,7 @@ class DifferentialDrive(Environment):
         delta_s_r   = self.r * action[0] * self.dt
         delta_s_l   = self.r * action[1] * self.dt
         delta_s     = (delta_s_r+delta_s_l)/2
-        theta       = state[0]
+        theta       = state[2]
         delta_theta = (delta_s_r-delta_s_l)/self.L
 
         state_d[0] = delta_s * torch.cos(theta+delta_theta/2)
@@ -47,7 +49,8 @@ class DifferentialDrive(Environment):
 
         next_state = state + state_d
 
-        reward = -torch.linalg.norm(next_state-self.terminal_state)  # The distance to terminal state
+        reward = -0.01*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
+        reward -= 0.001*torch.linalg.norm(action)        # To make sure, the robot excerts minimal force
 
         terminate = 'running'
         # For the cases that the agent goes out of range on x
@@ -58,6 +61,18 @@ class DifferentialDrive(Environment):
         if next_state[1] > self.y_lim or next_state[1] < 0:
             terminate = 'terminal'
 
+        # For the final state where the robot reaches the goal/terminal state
+        if torch.linalg.norm(next_state - self.terminal_state) < 0.1:
+            reward += 20
+            terminate = 'terminal'
+
+        # For the case that the robot hits the obstacle
+        if next_state[0] > self.obstacle_x_min and next_state[0] < self.obstacle_x_max and \
+            next_state[1] > self.obstacle_y_min and next_state[1] < self.obstacle_y_max:
+            reward -= 20
+            terminate = 'terminal'
+
+        # The time-limit
         if step_counter >= self.max_steps:
             terminate = 'truncate'
         
@@ -71,9 +86,13 @@ class DifferentialDrive(Environment):
         x, y, theta = self.init_state[0], self.init_state[1], self.init_state[2]
 
         axis_,   = ax.plot([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)], "b--", markersize=20)
-        wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "b-", markersize=20)
+        wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "g-", markersize=20)
         wheel_l, = ax.plot([x-self.L*np.sin(theta)+self.r*np.cos(theta), x-self.L*np.sin(theta)-self.r*np.cos(theta)], [y+self.L*np.cos(theta)+self.r*np.sin(theta), y+self.L*np.cos(theta)-+self.r*np.sin(theta)], "b-", markersize=20)
 
+        obstacle, = ax.plot([self.obstacle_x_min,self.obstacle_x_max,self.obstacle_x_max,self.obstacle_x_min,self.obstacle_x_min], \
+                            [self.obstacle_y_max,self.obstacle_y_max,self.obstacle_y_min,self.obstacle_y_min,self.obstacle_y_max], "r-", markersize=20)
+
+        terminal_, = ax.plot([self.terminal_state[0]],[self.terminal_state[1]], 'c*', markersize=20)
         def update_frame(frame):
             x     = states[frame][0].item()
             y     = states[frame][1].item()

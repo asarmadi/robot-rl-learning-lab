@@ -36,9 +36,9 @@ class Training:
         target = (reward + values*(1-d)*self.config['gamma'])
         input_new = torch.hstack((state,action))
         output    = self.Q_new(input_new)
-        loss_acritic      = self.criterion(output, target.detach())
+        loss_critic      = self.criterion(output, target.detach())
 
-        loss_acritic.backward()
+        loss_critic.backward()
         self.critic_optimizer.step()
          
         # Actor Update

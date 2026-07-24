@@ -19,7 +19,7 @@ class DifferentialDrive(Environment):
         self.r    = 0.05 # in meters
         self.L    = 0.3 # in meters
         self.dt   = 0.02  # This is 50 Hz
-        self.max_steps = 2000 # To terminate the rollout if it takes more than this number of steps
+        self.max_steps = 1000 # To terminate the rollout if it takes more than this number of steps
         self.x_lim  = 7 # The environment maximum x limit
         self.y_lim  = 7 # The environment maximum y limit
         self.obstacle_x_min, self.obstacle_x_max = 2, 4 # The boundary values for the obstacle on the x axis
@@ -49,9 +49,9 @@ class DifferentialDrive(Environment):
 
         next_state = state + state_d
 
-        reward = -0.01*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
+        reward = -0.1*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
         reward -= 0.001*torch.linalg.norm(action)        # To make sure, the robot excerts minimal force
-
+        
         terminate = 'running'
         # For the cases that the agent goes out of range on x
         if next_state[0] > self.x_lim or next_state[0] < 0:

@@ -1,5 +1,5 @@
 # REINFORCE
-The main idea in REINFORCE is to use a neural network as the policy and learn policy directly. It does not learn a value function to use it for choosing the actions. Also, REINFORCE is a using the return value instead of using an estimate for finding the target value. The whole idea of the REINFORCE starts from the fact we want to maximize the expected return:
+The main idea in REINFORCE is to use a neural network as the policy and learn policy directly. It does not learn a value function to use it for choosing the actions. Also, REINFORCE is using the return value instead of using an estimate for finding the target value. The whole idea of the REINFORCE starts from the fact we want to maximize the expected return:
 
 $$
 J(\theta) = \mathbb{E}_{\tau \sim p_{\theta}(\tau)} G(\tau)
@@ -28,7 +28,7 @@ $$
 \end{aligned}
 $$
 
-The key is to replace $\nabla_{\theta}p_{\theta}(\tau)=p_{\theta}(\tau)\nabla_{\theta}p_{\theta}(\tau)$, therefore, we have
+The key is to replace $\nabla_{\theta}p_{\theta}(\tau)=p_{\theta}(\tau)\nabla_{\theta}log p_{\theta}(\tau)$, therefore, we have
 
 $$
 \begin{aligned}
@@ -53,7 +53,7 @@ $$
 The main problem that we want to solve is to maximize the expected return:
 
 $$
-\theta^{*} = \argmax_{\theta} \mathbb{E}_{\tau \sim p_{\theta}(\tau)} \sum_{t=0}^{t=T} log \pi_{\theta}(a_t|s_t) G_t
+\theta^{*} = \arg\max_{\theta} \mathbb{E}_{\tau \sim p_{\theta}(\tau)} \sum_{t=0}^{t=T} log \pi_{\theta}(a_t|s_t) G_t
 $$
 
 # Observations

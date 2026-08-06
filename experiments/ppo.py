@@ -11,7 +11,7 @@ action_type = 'continuous'
 environment = 'DifferentialDrive'
 seed        = 42
 n_episodes  = 10000
-rollout_buffer_size  = 128  # This is different from the n-step, this is the size of the rollout buffer for training
+rollout_buffer_size  = 2048  # This is different from the n-step, this is the size of the rollout buffer for training
 gamma       = 0.995 # Discount factor
 lambda_     = 0.95  # GAE weighting coefficient
 
@@ -22,10 +22,10 @@ hidden_dim = 128
 
 # Training hyper-parameters
 config = {
-'lr_actor' : 0.01,
-'lr_critic' : 0.001,
+'lr_actor' : 0.0001,
+'lr_critic' : 0.0001,
 'batch_size' : 32,
-'n_epochs' : 5,
+'n_epochs' : 10,
 'epsilon'  : 0.2, # This is the clipping threshold for the actor loss
 'c_ent'    : 0.001 # Entropy loss coefficient
 }

@@ -15,3 +15,6 @@ $$
 $$
 
 where $x$, $y$ are the location of the center point on the wheel axis in the global coordinate system, $\theta$ is the heading angle of the robot, $\omega_R$, $\omega_L$ are the angular speed of the right and left wheel.
+
+## PPO
+I designed the reward and tried to find the policy using PPO. One thing that I observed is that if the terminal reward is low, then the agent learns to hit the terminal state (e.g., hitting the boundaries) instead of going to the final target. The reason is that hitting a boundary results in a lower reward than continuing towards the target.

@@ -24,7 +24,7 @@ class DifferentialDrive(Environment):
         self.y_lim  = 7 # The environment maximum y limit
         self.obstacle_x_min, self.obstacle_x_max = 2, 4 # The boundary values for the obstacle on the x axis
         self.obstacle_y_min, self.obstacle_y_max = 2, 4 # The boundary values for the obstacle on the y axis
-        self.terminal_reward = 100 # This is the reward for terminal cases to be added to the reward
+        self.terminal_reward = 1000 # This is the reward for terminal cases to be added to the reward
 
         self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
@@ -52,7 +52,7 @@ class DifferentialDrive(Environment):
 
         next_state[2] = torch.atan2(torch.sin(next_state[2]), torch.cos(next_state[2])) # Wrapping the angle to fall whithin -pi to pi
 
-        reward = -0.5*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
+        reward = -0.1*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
         reward -= 0.001*torch.linalg.norm(action)        # To make sure, the robot excerts minimal force
         
         terminate = 'running'

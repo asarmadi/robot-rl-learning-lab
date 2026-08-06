@@ -2,6 +2,7 @@ import torch
 from agents.mlp_continuous import MLPC
 from utils.replay_buffer import ReplayBuffer
 from estimators.mlp import MLP as MLPQ
+from envs.load_env import load_environment
 from utils.sac_training import Training
 
 # General hyper-parameters
@@ -28,16 +29,7 @@ config = {
     'alpha':      0.1 # Exploration coefficient in entropy maximization
 }
 
-if environment == 'CartPole':
-    from envs.cart_pole import CartPole
-    env   = CartPole(method=method)
-    output_dim  = 1
-    max_action  = 5
-elif environment == 'DifferentialDrive':
-    from envs.differential_drive import DifferentialDrive
-    env   = DifferentialDrive(method=method)
-    output_dim = 2
-    max_action  = 10
+env, output_dim, max_action = load_environment(environment, method)
 
 agent      = MLPC(input_dim=env.state_dim, hidden_dim=hidden_dim, n_layers=n_layers, output_dim=output_dim, type_=action_type, max_action=max_action)
 

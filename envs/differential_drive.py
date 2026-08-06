@@ -24,6 +24,7 @@ class DifferentialDrive(Environment):
         self.y_lim  = 7 # The environment maximum y limit
         self.obstacle_x_min, self.obstacle_x_max = 2, 4 # The boundary values for the obstacle on the x axis
         self.obstacle_y_min, self.obstacle_y_max = 2, 4 # The boundary values for the obstacle on the y axis
+        self.terminal_reward = 100 # This is the reward for terminal cases to be added to the reward
 
         self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
@@ -49,32 +50,45 @@ class DifferentialDrive(Environment):
 
         next_state = state + state_d
 
-        reward = -0.1*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
+        next_state[2] = torch.atan2(torch.sin(next_state[2]), torch.cos(next_state[2])) # Wrapping the angle to fall whithin -pi to pi
+
+        reward = -0.5*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
         reward -= 0.001*torch.linalg.norm(action)        # To make sure, the robot excerts minimal force
         
         terminate = 'running'
         # For the cases that the agent goes out of range on x
         if next_state[0] > self.x_lim or next_state[0] < 0:
+            reward -= self.terminal_reward
             terminate = 'terminal'
+            print('Out of x bound')
+
 
         # For the cases where the agent goes out of range on y
         if next_state[1] > self.y_lim or next_state[1] < 0:
+            reward -= self.terminal_reward
             terminate = 'terminal'
+            print('Out of y bound')
 
         # For the final state where the robot reaches the goal/terminal state
-        if torch.linalg.norm(next_state - self.terminal_state) < 0.1:
-            reward += 20
+        if torch.linalg.norm(next_state[0:2] - self.terminal_state[0:2]) < 0.1:
+            reward += self.terminal_reward
             terminate = 'terminal'
+            print('Reached goal')
 
+            
         # For the case that the robot hits the obstacle
         if next_state[0] > self.obstacle_x_min and next_state[0] < self.obstacle_x_max and \
             next_state[1] > self.obstacle_y_min and next_state[1] < self.obstacle_y_max:
-            reward -= 20
+            reward -= self.terminal_reward
             terminate = 'terminal'
+            print('Hit obstacle')
+
 
         # The time-limit
-        if step_counter >= self.max_steps:
+        if terminate == 'running' and step_counter >= self.max_steps:
             terminate = 'truncate'
+            print('Out of time')
+
         
         return next_state, reward, terminate
     

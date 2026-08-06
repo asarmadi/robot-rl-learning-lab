@@ -8,8 +8,8 @@ class Training:
         self.state_value           = state_value
         self.config                = config
         self.state_value_criterion = nn.MSELoss()
-        self.actor_optimizer  = optim.Adam(self.policy.parameters(), lr=config['lr'])
-        self.critic_optimizer = optim.Adam(self.state_value.parameters(), lr=config['lr'])
+        self.actor_optimizer  = optim.Adam(self.policy.parameters(), lr=config['lr_actor'])
+        self.critic_optimizer = optim.Adam(self.state_value.parameters(), lr=config['lr_critic'])
 
     def train(self, rollout_buffer):
         # Training the actor

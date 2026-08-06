@@ -1,12 +1,13 @@
 import torch
 
 class RolloutBuffer():
-    def __init__(self, state_dim, size, gamma, lambda_, batch_size):
+    def __init__(self, state_dim, action_dim, size, gamma, lambda_, batch_size):
         self.size      = size
         self.state_dim = state_dim
         self.gamma     = gamma
         self.lambda_   = lambda_
         self.batch_size= batch_size 
+        self.action_dim= action_dim
         self.reset()
 
     def getitem(self, idx):
@@ -58,7 +59,7 @@ class RolloutBuffer():
         self.state         = torch.zeros((self.size, self.state_dim))
         self.next_state    = torch.zeros((self.size, self.state_dim))
         self.reward        = torch.zeros((self.size, 1))
-        self.action        = torch.zeros((self.size, 1))
+        self.action        = torch.zeros((self.size, self.action_dim))
         self.terminate     = {}
         self.log_prob      = torch.zeros((self.size, 1))
         self.advantages    = torch.zeros((self.size, 1))

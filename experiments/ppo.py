@@ -31,6 +31,7 @@ config = {
 }
 
 torch.manual_seed(seed)
+torch.set_default_device("cuda")
 
 env, output_dim, max_action = load_environment(environment, method)
 
@@ -71,7 +72,7 @@ for episode in range(1, n_episodes):
 
         if terminate == 'terminal' or terminate == 'truncate':
             break
-    rewards.append(sum_rewards)
+    rewards.append(sum_rewards.cpu().numpy())
     print(f'Episode: {episode}, Steps: {step}, Reward: {sum_rewards}')
 
     # plotting the result every 1000 episodes

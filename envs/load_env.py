@@ -8,5 +8,5 @@ def load_environment(environment, method):
         from envs.differential_drive import DifferentialDrive
         env   = DifferentialDrive(method=method)
         output_dim = 2
-        max_action  = 10
+        max_action  = 5
     return env, output_dim, max_action

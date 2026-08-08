@@ -19,12 +19,12 @@ class DifferentialDrive(Environment):
         self.r    = 0.05 # in meters
         self.L    = 0.3 # in meters
         self.dt   = 0.02  # This is 50 Hz
-        self.max_steps = 1000 # To terminate the rollout if it takes more than this number of steps
+        self.max_steps = 2000 # To terminate the rollout if it takes more than this number of steps
         self.x_lim  = 7 # The environment maximum x limit
         self.y_lim  = 7 # The environment maximum y limit
         self.obstacle_x_min, self.obstacle_x_max = 2, 4 # The boundary values for the obstacle on the x axis
         self.obstacle_y_min, self.obstacle_y_max = 2, 4 # The boundary values for the obstacle on the y axis
-        self.terminal_reward = 1000 # This is the reward for terminal cases to be added to the reward
+        self.terminal_reward = 2000 # This is the reward for terminal cases to be added to the reward
 
         self.save_dir        = f'./logs/differentialDrive_{method}'
         os.makedirs(self.save_dir, exist_ok=True)
@@ -52,9 +52,11 @@ class DifferentialDrive(Environment):
 
         next_state[2] = torch.atan2(torch.sin(next_state[2]), torch.cos(next_state[2])) # Wrapping the angle to fall whithin -pi to pi
 
-        reward = -0.1*torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
+        reward = -torch.linalg.norm(next_state[0:2]-self.terminal_state[0:2])  # The distance to terminal state in x,y
         reward -= 0.001*torch.linalg.norm(action)        # To make sure, the robot excerts minimal force
+        reward -= torch.tensor(0.02)  # To punish staying at the same location
         
+
         terminate = 'running'
         # For the cases that the agent goes out of range on x
         if next_state[0] > self.x_lim or next_state[0] < 0:
@@ -97,7 +99,7 @@ class DifferentialDrive(Environment):
         ax.set_xlim(0, self.x_lim)
         ax.set_ylim(0, self.y_lim)
 
-        x, y, theta = self.init_state[0], self.init_state[1], self.init_state[2]
+        x, y, theta = self.init_state[0].cpu().numpy(), self.init_state[1].cpu().numpy(), self.init_state[2].cpu().numpy()
 
         axis_,   = ax.plot([x+self.L*np.sin(theta), x-self.L*np.sin(theta)], [y-self.L*np.cos(theta), y+self.L*np.cos(theta)], "b--", markersize=20)
         wheel_r, = ax.plot([x+self.L*np.sin(theta)+self.r*np.cos(theta), x+self.L*np.sin(theta)-self.r*np.cos(theta)], [y-self.L*np.cos(theta)+self.r*np.sin(theta), y-self.L*np.cos(theta)-+self.r*np.sin(theta)], "g-", markersize=20)
@@ -106,7 +108,7 @@ class DifferentialDrive(Environment):
         obstacle, = ax.plot([self.obstacle_x_min,self.obstacle_x_max,self.obstacle_x_max,self.obstacle_x_min,self.obstacle_x_min], \
                             [self.obstacle_y_max,self.obstacle_y_max,self.obstacle_y_min,self.obstacle_y_min,self.obstacle_y_max], "r-", markersize=20)
 
-        terminal_, = ax.plot([self.terminal_state[0]],[self.terminal_state[1]], 'c*', markersize=20)
+        terminal_, = ax.plot([self.terminal_state[0].cpu().numpy()],[self.terminal_state[1].cpu().numpy()], 'c*', markersize=20)
         def update_frame(frame):
             x     = states[frame][0].item()
             y     = states[frame][1].item()
@@ -175,18 +177,17 @@ class DifferentialDrive(Environment):
                 action_env = torch.tensor(policy.actions[action.item()])
             else:
                 output = policy.predict(state).detach()
-                #squashed_action = torch.tanh(output[0])       
-                action_env = policy.max_action * output[0:2] 
+                squashed_action = torch.tanh(output[0:2])       
+                action_env = policy.max_action * squashed_action 
             next_state, reward, terminate = self.step(state, action_env, step)
-            states_for_plotting.append(state.detach().numpy())
-            actions_for_plotting.append(action_env)
+            states_for_plotting.append(state.detach().cpu().numpy())
+            actions_for_plotting.append(action_env.cpu().numpy())
 
             if terminate == 'terminal' or terminate == 'truncate':
                 break
             
             state = next_state
             step += 1
-
         self.plot_states(states_for_plotting, actions_for_plotting, name_str=episode)
 
 

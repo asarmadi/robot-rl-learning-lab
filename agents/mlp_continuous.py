@@ -26,7 +26,7 @@ class MLPC(nn.Module, Agent):
         self.type = type_
         self.max_action = max_action
         self.min_log_std = -4
-        self.max_log_std = torch.log(torch.tensor(0.3 * 2 * max_action)) # 10% of the action range
+        self.max_log_std = torch.log(torch.tensor(0.1 * 2 * max_action)) # 10% of the action range
 
     def init_weights(self):
         # Normal hidden-layer initialization

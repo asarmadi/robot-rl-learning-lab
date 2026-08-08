@@ -24,9 +24,9 @@ class Agent:
         elif self.type == 'continuous':
             output = self.predict(state)
             if state.ndim == 1:
-                out_mean, out_std = output[0:self.output_dim-1], output[self.output_dim-1:-1]
+                out_mean, out_std = output[0:self.output_dim], output[self.output_dim-1:-1]
             else:
-                out_mean, out_std = output[:,0:self.output_dim-1], output[:,self.output_dim-1:-1]
+                out_mean, out_std = output[:,0:self.output_dim], output[:,self.output_dim-1:-1]
             std          = torch.exp(out_std) # To make sure the std is always positive
 
             distribution = torch.distributions.Normal(out_mean, std)
@@ -76,11 +76,11 @@ class Agent:
             output = self.forward(state)
             if state.ndim == 1:
                 # During the rollout we only pass one state at a time
-                out_mean, out_std = output[0:self.output_dim-1], output[self.output_dim-1:-1]
+                out_mean, out_std = output[0:self.output_dim], output[self.output_dim-1:-1]
             else:
                 # Druing training we pass a batch of samples
-                out_mean, out_std = output[:,0:self.output_dim-1], output[:,self.output_dim-1:-1]
-
+                out_mean, out_std = output[:,0:self.output_dim], output[:,self.output_dim-1:-1]
+            
             out_std = torch.clamp(out_std, self.min_log_std, self.max_log_std)
             std = torch.exp(out_std)
 
@@ -89,10 +89,10 @@ class Agent:
             if action is None:
                 action       = distribution.rsample()
                 # Based on the mean and std, the action could be out of the desired range, we need to correct that
-                squashed_action = torch.tanh(action)       
-                action_env = self.max_action * squashed_action
-            else:
-                squashed_action = torch.tanh(action)       
+            
+            squashed_action = torch.tanh(action)       
+
+            action_env = self.max_action * squashed_action
 
             log_probs = distribution.log_prob(action)
 

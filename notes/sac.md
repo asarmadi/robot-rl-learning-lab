@@ -9,7 +9,7 @@ $$
 J(\pi) = \mathbb{E}_{\pi} [\sum_{t=0}^{\infty} \gamma^t(r_t+\alpha \mathbb{H}(\pi(.|s_t)))]
 $$
 
-where $\mathbb{H}$ is the entropy of the policy and $\alpha$ controls how much we care about exploration. For a probabilistic policy, the entropy could be defined as $\mathbb{H(\pi(.|s))}=-\mathbb{E}_{a\from \pi}[\log{\pi(a|s)}]$, therefore, the objective will be:
+where $\mathbb{H}$ is the entropy of the policy and $\alpha$ controls how much we care about exploration. For a probabilistic policy, the entropy could be defined as $\mathbb{H(\pi(.|s))}=-\mathbb{E}_{a\sim \pi}[\log{\pi(a|s)}]$, therefore, the objective will be:
 
 $$
 J(\pi)=\mathbb{E}_{\pi}[\sum_{t=0}^{\infty}\gamma^t(r_t-\alpha \log{\pi(a_t|s_t)})]

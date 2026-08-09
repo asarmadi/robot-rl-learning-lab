@@ -8,13 +8,13 @@ $$
 PPO defines the objective similar to A2C, the differnce is that it uses the newly defined variable $r_{\theta}(t)$ in the log. The reason that it is correct is that, $\pi_{\theta_{old}}$ is not dependent on the $\theta$, therefore, it is like adding a zero to the gradient:
 
 $$
-J(\theta) = \mathcal{E}r_{\theta}(t)A_t
+J(\theta) = \mathbb{E}r_{\theta}(t)A_t
 $$
 
 The other technique that is used in PPO that makes it different is the clipping which makes sure that the change won't be too much. It prevents the policy to be very different from the current policy. Therefore, the overall policy optimization looks like:
 
 $$
-\mathcal{E}\min{(r_{\theta}(t)A_t, clip(r_{\theta}(t), 1-\epsilon, 1+\epsilon)A_t)}
+\mathbb{E}\min{(r_{\theta}(t)A_t, clip(r_{\theta}(t), 1-\epsilon, 1+\epsilon)A_t)}
 $$
 
 One thing to notice is the min function. The min function makes it even more pessemistic by choosing the minimum value. Our goal is to maximize, therefore, we want to prevent cases that the clipping is actually results in a larger number than the $r_{\theta}(t)A_t$.

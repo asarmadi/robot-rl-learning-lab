@@ -6,19 +6,19 @@ In algorithms like DDPG and TD3, the exploration was performed by adding noise t
 In SAC, the objective is
 
 $$
-J(\pi) = \mathbh{E}_{\pi} [\sum_{t=0}^{\infty} \gamma^t(r_t+\alpha \mathbh{H}(\pi(.|s_t)))]
+J(\pi) = \mathbb{E}_{\pi} [\sum_{t=0}^{\infty} \gamma^t(r_t+\alpha \mathbb{H}(\pi(.|s_t)))]
 $$
 
-where $\mathbh{H}$ is the entropy of the policy and $\alpha$ controls how much we care about exploration. For a probabilistic policy, the entropy could be defined as $\mathbh{H(\pi(.|s))}=-\mathbh{E}_{a\from \pi}[\log{\pi(a|s)}]$, therefore, the objective will be:
+where $\mathbb{H}$ is the entropy of the policy and $\alpha$ controls how much we care about exploration. For a probabilistic policy, the entropy could be defined as $\mathbb{H(\pi(.|s))}=-\mathbb{E}_{a\from \pi}[\log{\pi(a|s)}]$, therefore, the objective will be:
 
 $$
-J(\pi)=\mathbh{E}_{\pi}[\sum_{t=0}^{\infty}\gamma^t(r_t-\alpha \log{\pi(a_t|s_t)})]
+J(\pi)=\mathbb{E}_{\pi}[\sum_{t=0}^{\infty}\gamma^t(r_t-\alpha \log{\pi(a_t|s_t)})]
 $$
 
 SAC bootstraps the action values, and building on the entropy maximization idea, the action value function estimation becomes:
 
 $$
-Q^{\pi}(s_t,a_t)=r_t+\gamma \mathbh{E}[Q^{\pi}(s_{t+1},a_{t+1})-\alpha \log{\pi(a_{t+1}|s_{t+!})}]
+Q^{\pi}(s_t,a_t)=r_t+\gamma \mathbb{E}[Q^{\pi}(s_{t+1},a_{t+1})-\alpha \log{\pi(a_{t+1}|s_{t+!})}]
 $$
 
 The rest of the algorithm is very similar to the TD3 where it is using two critics to reduce the overstimation bias. Also, it uses the soft update idea to slowly update the target networks from the online ones. However, SAC does not consider two networks for the actor. It has only one probabilistic actor that is used to during the target value calculations for the critics.

@@ -16,7 +16,7 @@ $$
 The actor tries to create an action to maximize the action values for a given state:
 
 $$
-J^*(\theta)=\max_{\theta}\mathbb{E}_{s\from D}[Q_{\Phi}(s,\mu_{\theta}(s))]
+J^*(\theta)=\max_{\theta}\mathbb{E}_{s\sim D}[Q_{\Phi}(s,\mu_{\theta}(s))]
 $$
 
 We can solve this maximization by utilizing the MC method over a batch of samples with size B. Therefore, the loss function for minimization would be:

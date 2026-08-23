@@ -5,6 +5,7 @@ $$
 r_{\theta}(t) = \frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}
 $$
 
+This quantity has an actual meaning which comes from importance sampling. The idea is that we want to calculate the expectation under a probability distribution while the samples are drwan from another distribution. In this case, the expectation is $\mathbb{E}_{a\sim \pi_{new}}A(s,a)$ that we want to maximize. However, our rollout buffer has samples collected using $\pi_{old}$. The question is whether we can reweight the samples coming from the old policy to behave like they are coming from the new policy. Importance sampling proposes rewighting the probability distribution like $\mathbb{E}_{s,a\sim\pi_{old}}\frac{\pi_{new}(s,a)}{\pi_{old}(s,a)}A(s,a)$. Therefore, $r_{\theta}$ is the importance sampling ration.
 PPO defines the objective similar to A2C, the differnce is that it uses the newly defined variable $r_{\theta}(t)$ in the log. The reason that it is correct is that, $\pi_{\theta_{old}}$ is not dependent on the $\theta$, therefore, it is like adding a zero to the gradient:
 
 $$
